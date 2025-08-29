@@ -1,0 +1,265 @@
+/* ==========================================================================
+   CLIMA MINIMALISTA - CUSTOM STYLES
+   Estilos personalizados que complementan Tailwind CSS
+   ========================================================================== */
+
+/* Custom Tailwind Configuration */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* Root Variables for Consistent Theming */
+:root {
+    --color-primary: #E8F4FD;
+    --color-secondary: #FFE5CC;
+    --color-accent-1: #D4F1F4;
+    --color-accent-2: #F5E6FF;
+    --color-accent-3: #FFE5E5;
+    --color-text-primary: #4A5568;
+    --color-text-secondary: #718096;
+    --border-radius-lg: 12px;
+    --border-radius-md: 8px;
+    --transition-fast: 200ms ease-in-out;
+    --shadow-soft: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* Base Styles */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-weight: 400;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom Background Gradients for Weather Conditions */
+.weather-sunny {
+    background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 50%, #F59E0B 100%);
+}
+
+.weather-cloudy {
+    background: linear-gradient(135deg, #F1F5F9 0%, #E2E8F0 50%, #CBD5E1 100%);
+}
+
+.weather-rainy {
+    background: linear-gradient(135deg, #DBEAFE 0%, #93C5FD 50%, #3B82F6 100%);
+}
+
+.weather-stormy {
+    background: linear-gradient(135deg, #6B7280 0%, #4B5563 50%, #1F2937 100%);
+}
+
+.weather-snowy {
+    background: linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 50%, #E2E8F0 100%);
+}
+
+.weather-foggy {
+    background: linear-gradient(135deg, #F9FAFB 0%, #F3F4F6 50%, #D1D5DB 100%);
+}
+
+/* Animated Weather Effects */
+@keyframes rainDrop {
+    0% {
+        transform: translateY(-100vh);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(100vh);
+        opacity: 0;
+    }
+}
+
+@keyframes snowFall {
+    0% {
+        transform: translateY(-100vh) rotateX(0deg);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(100vh) rotateX(360deg);
+        opacity: 0;
+    }
+}
+
+@keyframes sunRotate {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes cloudFloat {
+    0% {
+        transform: translateX(-10px);
+    }
+    50% {
+        transform: translateX(10px);
+    }
+    100% {
+        transform: translateX(-10px);
+    }
+}
+
+/* Weather Effect Classes */
+.rain-effect::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: linear-gradient(transparent 0%, rgba(59, 130, 246, 0.1) 50%, transparent 100%);
+    background-size: 2px 20px;
+    animation: rainDrop 1s linear infinite;
+    pointer-events: none;
+}
+
+.snow-effect::before {
+    content: '❄️ ❄️ ❄️';
+    position: absolute;
+    top: -50px;
+    left: 0;
+    right: 0;
+    animation: snowFall 3s linear infinite;
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+.sun-icon {
+    animation: sunRotate 20s linear infinite;
+}
+
+.cloud-icon {
+    animation: cloudFloat 4s ease-in-out infinite;
+}
+
+/* Custom Glassmorphism Effects */
+.glass-card {
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: var(--shadow-soft);
+}
+
+.glass-card-hover {
+    transition: var(--transition-fast);
+}
+
+.glass-card-hover:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+}
+
+/* Temperature Display */
+.temperature-main {
+    font-size: clamp(3rem, 8vw, 5rem);
+    font-weight: 300;
+    line-height: 1;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.temperature-small {
+    font-size: 1.25rem;
+    font-weight: 500;
+}
+
+/* Custom Scrollbar for Forecast */
+.forecast-scroll::-webkit-scrollbar {
+    height: 4px;
+}
+
+.forecast-scroll::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
+}
+
+.forecast-scroll::-webkit-scrollbar-thumb {
+    background: rgba(59, 130, 246, 0.3);
+    border-radius: 2px;
+}
+
+.forecast-scroll::-webkit-scrollbar-thumb:hover {
+    background: rgba(59, 130, 246, 0.5);
+}
+
+/* Fade In Animation */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in {
+    animation: fadeIn 0.6s ease-out;
+}
+
+/* Accessibility Improvements */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+    .glass-card {
+        background: rgba(255, 255, 255, 0.9);
+        border: 2px solid var(--color-text-primary);
+    }
+    
+    body {
+        color: var(--color-text-primary);
+    }
+}
+
+/* Focus Styles for Accessibility */
+button:focus,
+.focusable:focus {
+    outline: 2px solid #3B82F6;
+    outline-offset: 2px;
+}
+
+/* Loading Spinner Enhancement */
+.loading-spinner {
+    border: 3px solid rgba(59, 130, 246, 0.3);
+    border-radius: 50%;
+    border-top: 3px solid #3B82F6;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Responsive Typography */
+@media (max-width: 640px) {
+    .temperature-main {
+        font-size: clamp(2.5rem, 12vw, 4rem);
+    }
+}
+
+/* Error State Styles */
+.error-state {
+    background: linear-gradient(135deg, #FEE2E2 0%, #FECACA 50%, #FCA5A5 100%);
+}
+
+/* Success State Styles */
+.success-state {
+    background: linear-gradient(135deg, #D1FAE5 0%, #A7F3D0 50%, #6EE7B7 100%);
+}

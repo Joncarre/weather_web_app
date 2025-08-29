@@ -1,0 +1,54 @@
+# API Keys y configuración sensible
+config.env
+.env
+.env.local
+.env.production
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Dependencias (si se usan en el futuro)
+node_modules/
+.npm
+.yarn-integrity
+
+# Archivos del sistema
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE y editores
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+
+# Archivos temporales
+*.tmp
+*.temp
+temp/
+tmp/
+
+# Cache de navegadores
+.cache/
+
+# Archivos de backup
+*.bak
+*.backup
+
+# Archivos de testing
+coverage/
+.nyc_output/
+
+# Archivos de build (para futuro)
+dist/
+build/
+public/assets/generated/
