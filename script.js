@@ -60,12 +60,21 @@ function hideError() {
 }
 
 /**
- * Muestra el contenido principal y oculta la pantalla de carga
+ * Muestra el contenido principal con animaciones escalonadas
  */
 function showMainContent() {
     elements.loadingScreen.classList.add('hidden');
     elements.mainContent.classList.remove('hidden');
-    elements.mainContent.classList.add('fade-in');
+    
+    // Inicializar iconos de Lucide
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+    
+    // Aplicar animaciones escalonadas
+    setTimeout(() => {
+        elements.mainContent.classList.add('fade-in');
+    }, 50);
 }
 
 /**
@@ -216,54 +225,94 @@ async function getForecast(lat, lon) {
 // ========================================================================
 
 /**
- * Actualiza la información de ubicación
+ * Actualiza la información de ubicación con mejor estilo
  */
 function updateLocation(data) {
     const locationText = `${data.name}, ${data.sys.country}`;
     elements.location.innerHTML = `
-        <i data-lucide="map-pin" class="w-4 h-4 mr-1"></i>
+        <i data-lucide="map-pin" class="w-4 h-4"></i>
         <span>${locationText}</span>
     `;
+    
+    // Recrear iconos de Lucide después de actualizar el DOM
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
 }
 
 /**
- * Renderiza el clima actual (placeholder por ahora)
+ * Renderiza el clima actual con el nuevo sistema de diseño
  */
 function renderCurrentWeather(data) {
-    // TODO: Implementar en Fase 4
+    const iconMap = {
+        'clear sky': '☀️',
+        'few clouds': '🌤️',
+        'scattered clouds': '⛅',
+        'broken clouds': '☁️',
+        'shower rain': '🌦️',
+        'rain': '🌧️',
+        'thunderstorm': '⛈️',
+        'snow': '🌨️',
+        'mist': '🌫️',
+        'default': '🌤️'
+    };
+
+    const weatherIcon = iconMap[data.weather[0].description] || iconMap['default'];
+    
     elements.currentWeather.innerHTML = `
         <div class="text-center">
-            <div class="text-6xl mb-2">🌤️</div>
-            <div class="temperature-main text-slate-700">${Math.round(data.main.temp)}°</div>
-            <p class="text-lg text-slate-600 mb-4">${capitalize(data.weather[0].description)}</p>
-            <div class="text-slate-500">
-                Sensación térmica: ${Math.round(data.main.feels_like)}°
+            <div class="weather-icon pulse-gentle mb-4">${weatherIcon}</div>
+            <div class="temperature-main mb-2">${Math.round(data.main.temp)}°</div>
+            <p class="weather-description mb-4">${capitalize(data.weather[0].description)}</p>
+            <div class="flex justify-center items-center gap-6 text-sm">
+                <div class="flex items-center gap-1">
+                    <i data-lucide="thermometer" class="w-4 h-4 text-blue-400"></i>
+                    <span class="data-label">Sensación</span>
+                    <span class="data-value">${Math.round(data.main.feels_like)}°</span>
+                </div>
             </div>
         </div>
     `;
 }
 
 /**
- * Renderiza información adicional (placeholder por ahora)
+ * Renderiza información adicional con el nuevo diseño
  */
 function renderAdditionalInfo(data) {
-    // TODO: Implementar completamente en Fase 4
-    elements.additionalInfo.innerHTML = `
-        <div class="glass-card rounded-lg p-4">
-            <div class="text-center">
-                <div class="text-2xl mb-1">💧</div>
-                <div class="text-sm text-slate-600">Humedad</div>
-                <div class="font-semibold text-slate-700">${data.main.humidity}%</div>
-            </div>
+    const additionalData = [
+        {
+            icon: '💧',
+            label: 'Humedad',
+            value: `${data.main.humidity}%`,
+            lucideIcon: 'droplets'
+        },
+        {
+            icon: '💨',
+            label: 'Viento',
+            value: `${Math.round(data.wind.speed)} km/h`,
+            lucideIcon: 'wind'
+        },
+        {
+            icon: '�',
+            label: 'Presión',
+            value: `${data.main.pressure} hPa`,
+            lucideIcon: 'gauge'
+        },
+        {
+            icon: '👁️',
+            label: 'Visibilidad',
+            value: data.visibility ? `${Math.round(data.visibility / 1000)} km` : 'N/A',
+            lucideIcon: 'eye'
+        }
+    ];
+
+    elements.additionalInfo.innerHTML = additionalData.map((item, index) => `
+        <div class="info-card glass-card-hover fade-in-delay-${index + 1}">
+            <div class="info-icon">${item.icon}</div>
+            <div class="info-label">${item.label}</div>
+            <div class="info-value">${item.value}</div>
         </div>
-        <div class="glass-card rounded-lg p-4">
-            <div class="text-center">
-                <div class="text-2xl mb-1">💨</div>
-                <div class="text-sm text-slate-600">Viento</div>
-                <div class="font-semibold text-slate-700">${Math.round(data.wind.speed)} km/h</div>
-            </div>
-        </div>
-    `;
+    `).join('');
 }
 
 /**
@@ -284,38 +333,52 @@ function renderForecast(data) {
 // ========================================================================
 
 /**
- * Aplica efectos visuales según el clima (placeholder por ahora)
+ * Aplica efectos visuales mejorados según el clima
  */
 function applyWeatherEffects(weatherCode, main) {
-    // TODO: Implementar completamente en Fase 6
-    document.body.className = 'min-h-screen bg-gradient-to-br from-blue-50 via-orange-50 to-cyan-50';
+    // Remover todas las clases de clima anteriores
+    const weatherClasses = [
+        'weather-sunny', 'weather-partly-cloudy', 'weather-cloudy', 
+        'weather-rainy', 'weather-stormy', 'weather-snowy', 
+        'weather-foggy', 'weather-sunset'
+    ];
     
-    // Remover clases de efectos anteriores
-    document.body.classList.remove('rain-effect', 'snow-effect');
+    document.body.classList.remove(...weatherClasses, 'rain-effect', 'snow-effect');
     
-    // Aplicar efectos básicos según el código del clima
+    // Aplicar nueva clase según el código del clima
+    let weatherClass = 'weather-sunny'; // default
+    
     switch(main.toLowerCase()) {
         case 'clear':
-            document.body.className += ' weather-sunny';
+            weatherClass = 'weather-sunny';
             break;
         case 'clouds':
-            document.body.className += ' weather-cloudy';
+            // Distinguir entre parcialmente nublado y nublado
+            weatherClass = weatherCode >= 803 ? 'weather-cloudy' : 'weather-partly-cloudy';
             break;
         case 'rain':
         case 'drizzle':
-            document.body.className += ' weather-rainy rain-effect';
+            weatherClass = 'weather-rainy';
+            document.body.classList.add('rain-effect');
             break;
         case 'thunderstorm':
-            document.body.className += ' weather-stormy';
+            weatherClass = 'weather-stormy';
             break;
         case 'snow':
-            document.body.className += ' weather-snowy snow-effect';
+            weatherClass = 'weather-snowy';
+            document.body.classList.add('snow-effect');
             break;
         case 'mist':
         case 'fog':
-            document.body.className += ' weather-foggy';
+        case 'haze':
+            weatherClass = 'weather-foggy';
             break;
     }
+    
+    // Aplicar la clase con una transición suave
+    setTimeout(() => {
+        document.body.classList.add(weatherClass);
+    }, 100);
 }
 
 // ========================================================================
@@ -448,5 +511,5 @@ function loadMockData() {
     }, 2000);
 }
 
-// Uncomment para testing sin API:
-// document.addEventListener('DOMContentLoaded', loadMockData);
+// Testing con datos de prueba (descomenta para probar sin API):
+document.addEventListener('DOMContentLoaded', loadMockData);
