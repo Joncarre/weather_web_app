@@ -4,7 +4,7 @@ Mi madre no para de pedirme que le instale la aplicación del tiempo. Que si no 
 
 En resumen: una aplicación web del tiempo que es responsive y minimalista, optimizada para móviles y diseñada especialmente para personas mayores como mi madre. Sin anuncios, sin complicaciones.
 
-## ✨ Características Principales
+## Características Principales
 
 - **100% Responsive** - Diseño mobile-first optimizado
 - **Diseño Minimalista** - Colores pasteles suaves y tipografía clara
