@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Pronóstico extendido de 7 días - Clima minimalista">
+    <meta name="theme-color" content="#E8F4FD">
+    <title>Pronóstico 7 días - El tiempo hoy</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd.js"></script>
+    
+    <!-- Chart.js para gráficas -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <!-- Configuration -->
+    <script src="config.js"></script>
+    
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="forecast-styles.css">
+    
+    <!-- Preconnect for performance -->
+    <link rel="preconnect" href="https://api.openweathermap.org">
+</head>
+<body class="min-h-screen bg-gradient-to-br from-blue-50 via-orange-50 to-cyan-50">
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="fixed inset-0 bg-gradient-to-br from-blue-50 via-orange-50 to-cyan-50 flex items-center justify-center z-50">
+        <div class="weather-main-card p-8 text-center">
+            <div class="loading-spinner mx-auto mb-6"></div>
+            <p class="weather-description text-slate-600">Cargando pronóstico extendido...</p>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div id="main-content" class="hidden min-h-screen p-4">
+        <!-- Header with Back Button -->
+        <header class="max-w-4xl mx-auto mb-6">
+            <div class="flex items-center justify-between">
+                <button onclick="goBack()" class="glass-button flex items-center gap-2 px-4 py-2">
+                    <i data-lucide="arrow-left" class="w-5 h-5"></i>
+                    <span>Volver</span>
+                </button>
+                
+                <div class="text-center">
+                    <h1 class="title-main">Pronóstico 7 días</h1>
+                    <p id="location-display" class="location-text">
+                        <i data-lucide="map-pin" class="w-4 h-4 inline mr-1"></i>
+                        <span>Detectando ubicación...</span>
+                    </p>
+                </div>
+                
+                <button onclick="toggleDarkMode()" id="dark-mode-btn" class="glass-button px-4 py-2">
+                    <i data-lucide="moon" class="w-5 h-5"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Forecast Container -->
+        <main class="max-w-4xl mx-auto space-y-6">
+            <!-- Daily Forecast Cards -->
+            <div id="daily-forecast" class="weather-main-card">
+                <h2 class="title-section mb-6">Resumen semanal</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-4" id="daily-cards-container">
+                    <!-- Daily cards will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Detailed Daily Info -->
+            <div id="detailed-info" class="weather-main-card">
+                <h2 class="title-section mb-6">Información detallada</h2>
+                <div id="detailed-info-container">
+                    <!-- Detailed info will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Chart Navigation Button -->
+            <div class="text-center mb-8">
+                <button onclick="goToChart()" class="chart-nav-button">
+                    <i data-lucide="trending-up" class="w-5 h-5 mr-2"></i>
+                    Ver gráfica
+                </button>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="forecast-script.js"></script>
+    
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+    </script>
+</body>
+</html>

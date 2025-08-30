@@ -778,13 +778,110 @@ function renderAdditionalInfo(data) {
  * Renderiza el pronóstico (placeholder por ahora)
  */
 function renderForecast(data) {
-    // TODO: Implementar en Fase 5
-    elements.forecastContainer.innerHTML = `
-        <div class="text-center text-slate-600 py-8">
-            <div class="text-4xl mb-2">📅</div>
-            <p>Pronóstico de 7 días<br><small>Próximamente disponible</small></p>
-        </div>
-    `;
+    if (!data.list || data.list.length === 0) {
+        elements.forecastContainer.innerHTML = `
+            <div class="text-center text-slate-600 py-8">
+                <div class="text-4xl mb-2">📅</div>
+                <p>No hay datos de pronóstico disponibles</p>
+            </div>
+        `;
+        return;
+    }
+    
+    // Procesar datos por días (tomar uno por día a las 12:00)
+    const dailyData = [];
+    const processedDates = new Set();
+    
+    data.list.forEach(item => {
+        const date = new Date(item.dt * 1000);
+        const dateKey = date.toDateString();
+        
+        // Tomar solo un pronóstico por día (preferiblemente al mediodía)
+        if (!processedDates.has(dateKey) && dailyData.length < 7) {
+            processedDates.add(dateKey);
+            dailyData.push(item);
+        }
+    });
+    
+    // Mapeo de iconos
+    const iconMap = {
+        'cielo claro': '☀️',
+        'algo nuboso': '⛅',
+        'nubes dispersas': '☁️',
+        'nubes': '☁️',
+        'muy nuboso': '☁️',
+        'lluvia ligera': '🌦️',
+        'lluvia': '🌧️',
+        'lluvia intensa': '🌧️',
+        'tormenta': '⛈️',
+        'nieve': '🌨️',
+        'niebla': '🌫️',
+        'default': '☀️'
+    };
+    
+    const today = new Date();
+    
+    elements.forecastContainer.innerHTML = dailyData.map((item, index) => {
+        const date = new Date(item.dt * 1000);
+        const isToday = date.toDateString() === today.toDateString();
+        const isTomorrow = date.toDateString() === new Date(today.getTime() + 24 * 60 * 60 * 1000).toDateString();
+        
+        let dayLabel;
+        if (isToday) dayLabel = 'Hoy';
+        else if (isTomorrow) dayLabel = 'Mañana';
+        else dayLabel = date.toLocaleDateString('es-ES', { weekday: 'short' }).replace('.', '');
+        
+        const temp = Math.round(item.main.temp);
+        const tempMin = Math.round(item.main.temp_min);
+        const tempMax = Math.round(item.main.temp_max);
+        const icon = iconMap[item.weather[0].description] || iconMap['default'];
+        const precipitation = Math.round(item.pop * 100);
+        
+        return `
+            <div class="forecast-day-card min-w-28 p-3 text-center bg-white/20 backdrop-blur-sm border border-white/30 rounded-xl">
+                <div class="text-xs font-semibold text-slate-600 mb-2">${dayLabel.toUpperCase()}</div>
+                <div class="text-2xl mb-2">${icon}</div>
+                <div class="space-y-1">
+                    <div class="font-bold text-slate-800">${tempMax}°</div>
+                    <div class="text-sm text-slate-500">${tempMin}°</div>
+                    <div class="text-xs text-blue-600 flex items-center justify-center gap-1">
+                        <i data-lucide="cloud-rain" class="w-3 h-3"></i>
+                        <span>${precipitation}%</span>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    // Recrear iconos después de actualizar el DOM
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+    
+    // NO añadir evento de click al contenedor - solo mostrar información
+    const forecastSection = document.getElementById('forecast');
+    if (forecastSection && !forecastSection.hasAttribute('data-info-updated')) {
+        // Solo actualizar el título sin hacer clickeable
+        const title = forecastSection.querySelector('.title-section');
+        if (title) {
+            title.innerHTML = `Próximos 7 días`;
+            lucide.createIcons();
+        }
+        forecastSection.setAttribute('data-info-updated', 'true');
+    }
+}
+
+/**
+ * Función para ir a la página de gráfica desde la página principal
+ */
+function goToForecastChart() {
+    // Guardar datos del pronóstico en localStorage
+    const forecastData = localStorage.getItem('forecastData');
+    if (forecastData) {
+        localStorage.setItem('chartData', forecastData);
+    }
+    // Navegar a la página de pronóstico extendido
+    window.location.href = 'forecast.html';
 }
 
 // ========================================================================

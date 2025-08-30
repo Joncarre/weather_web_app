@@ -768,7 +768,7 @@ button:focus,
 }
 
 /* Tarjetas del Pronóstico */
-.forecast-card {
+.forecast-card, .forecast-day-card {
     background: var(--bg-glass-secondary);
     backdrop-filter: blur(12px);
     border: var(--border-glass);
@@ -778,12 +778,106 @@ button:focus,
     text-align: center;
     transition: all var(--transition-fast);
     position: relative;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    margin-bottom: 20px;
 }
 
 .forecast-card:hover {
     background: var(--bg-glass-primary);
     transform: translateY(-4px);
     box-shadow: var(--shadow-medium);
+}
+
+/* Sección de pronóstico */
+#forecast.weather-main-card {
+    position: relative;
+    padding-bottom: calc(var(--spacing-2xl) / 2);
+}
+
+#forecast.weather-main-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: var(--spacing-2xl);
+    background: linear-gradient(to right, var(--bg-glass-primary), transparent);
+    pointer-events: none;
+    z-index: 1;
+}
+
+#forecast.weather-main-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: var(--spacing-2xl);
+    background: linear-gradient(to left, var(--bg-glass-primary), transparent);
+    pointer-events: none;
+    z-index: 1;
+}
+
+#forecast.weather-main-card .title-section {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 2;
+}
+
+#forecast.weather-main-card .forecast-scroll {
+    position: relative;
+    z-index: 2;
+}
+
+/* Botón de navegación a gráfica */
+.chart-nav-button {
+    background: var(--bg-glass-primary);
+    backdrop-filter: blur(20px) saturate(180%);
+    border: var(--border-glass);
+    border-radius: var(--border-radius-lg);
+    padding: var(--spacing-lg) var(--spacing-xl);
+    color: var(--color-text-primary);
+    font-weight: 600;
+    font-size: 1.125rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.chart-nav-button:hover {
+    background: var(--bg-glass-secondary);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    color: var(--color-accent);
+}
+
+/* Botón de gráfica para página principal - más pequeño y diferente color */
+.chart-nav-button-main {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(147, 197, 253, 0.3));
+    backdrop-filter: blur(12px) saturate(150%);
+    border: 1px solid transparent;
+    border-radius: var(--border-radius-md);
+    padding: var(--spacing-md) var(--spacing-lg);
+    color: var(--color-text-primary);
+    font-weight: 500;
+    font-size: 0.875rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.chart-nav-button-main:hover {
+    border-color: rgba(59, 130, 246, 0.8);
+    transform: translateY(-1px);
 }
 
 /* Iconos del Clima Mejorados */
@@ -1024,6 +1118,18 @@ body.dark-mode {
 }
 
 /* Texto en modo oscuro */
+.dark-mode .chart-nav-button-main {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(147, 197, 253, 0.2));
+    border: 1px solid transparent;
+    color: #f1f5f9;
+}
+
+.dark-mode .chart-nav-button-main:hover {
+    border-color: rgba(59, 130, 246, 0.9);
+    transform: translateY(-1px);
+}
+
+/* Texto en modo oscuro */
 .dark-mode .title-main {
     color: #f1f5f9 !important;
 }
@@ -1067,6 +1173,14 @@ body.dark-mode {
 .dark-mode .temperature-forecast {
     color: #ffffff !important;
     font-weight: 700 !important;
+}
+
+/* Cards de pronóstico en modo oscuro */
+.dark-mode .forecast-day-card {
+    background: rgba(30, 41, 59, 0.8) !important;
+    border: 1px solid rgba(100, 116, 139, 0.4) !important;
+    color: #f1f5f9 !important;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 /* Textos generales más claros en modo oscuro */

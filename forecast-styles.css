@@ -1,0 +1,426 @@
+/* =========================================================================
+   ESTILOS ESPECÍFICOS PARA PRONÓSTICO EXTENDIDO
+   ========================================================================= */
+
+/* Botón de navegación con estilo glass */
+.glass-button {
+    background: var(--bg-glass-primary);
+    backdrop-filter: blur(20px) saturate(180%);
+    border: var(--border-glass);
+    border-radius: var(--border-radius-lg);
+    color: var(--color-text-primary);
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.glass-button:hover {
+    background: var(--bg-glass-secondary);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-medium);
+}
+
+/* Cards de pronóstico diario */
+.daily-card {
+    background: var(--bg-glass-primary);
+    backdrop-filter: blur(20px) saturate(180%);
+    border: var(--border-glass);
+    border-radius: var(--border-radius-lg);
+    padding: var(--spacing-lg);
+    text-align: center;
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.daily-card.selected {
+    border-color: rgba(59, 130, 246, 0.5);
+    background: rgba(59, 130, 246, 0.1);
+}
+
+/* Elementos dentro de la card diaria */
+.daily-date {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.5rem;
+}
+
+.daily-icon {
+    font-size: 2.5rem;
+    margin: 1rem 0;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.daily-temps {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1rem;
+}
+
+.temp-max {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+}
+
+.temp-min {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--color-text-tertiary);
+}
+
+.daily-precipitation {
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+    margin-top: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+}
+
+/* Contenedor de gráfica */
+.chart-container {
+    position: relative;
+    height: 300px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: var(--border-radius-lg);
+    padding: var(--spacing-lg);
+    margin: var(--spacing-lg) 0;
+}
+
+/* Contenedor de gráfica grande para página dedicada */
+.large-chart-container {
+    position: relative;
+    height: 400px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: var(--border-radius-lg);
+    padding: var(--spacing-xl);
+    margin: var(--spacing-lg) 0;
+}
+
+/* Botón de navegación a gráfica */
+.chart-nav-button {
+    background: var(--bg-glass-primary);
+    backdrop-filter: blur(20px) saturate(180%);
+    border: var(--border-glass);
+    border-radius: var(--border-radius-lg);
+    padding: var(--spacing-lg) var(--spacing-xl);
+    color: var(--color-text-primary);
+    font-weight: 600;
+    font-size: 1.125rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.chart-nav-button:hover {
+    background: var(--bg-glass-secondary);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    color: var(--color-accent);
+}
+
+/* Leyenda de la gráfica */
+.chart-legend {
+    display: grid;
+    gap: var(--spacing-md);
+}
+
+/* Leyenda grande para página de gráfica */
+.chart-legend-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: var(--spacing-lg);
+}
+
+.legend-item-large {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    background: rgba(255, 255, 255, 0.1);
+    padding: var(--spacing-lg);
+    border-radius: var(--border-radius-lg);
+    border: var(--border-glass);
+}
+
+.legend-color-large {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.legend-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.legend-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+}
+
+.legend-description {
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+    margin-top: 0.25rem;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+}
+
+.legend-color {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.legend-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+}
+
+/* Información detallada */
+.detailed-day-card {
+    background: var(--bg-glass-primary);
+    border: var(--border-glass);
+    border-radius: var(--border-radius-lg);
+    padding: var(--spacing-lg);
+    margin-bottom: var(--spacing-md);
+    transition: all 0.3s ease;
+}
+
+.detailed-day-card:hover {
+    background: var(--bg-glass-secondary);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-medium);
+}
+
+.detailed-day-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-md);
+    padding-bottom: var(--spacing-md);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.detailed-day-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+}
+
+.detailed-day-icon {
+    font-size: 1.5rem;
+}
+
+.detailed-day-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: var(--spacing-md);
+}
+
+.detailed-stat-item {
+    text-align: center;
+}
+
+.detailed-stat-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.25rem;
+}
+
+.detailed-stat-value {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .chart-container {
+        height: 250px;
+        padding: var(--spacing-md);
+    }
+    
+    .daily-card {
+        min-height: 180px;
+    }
+    
+    .detailed-day-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 640px) {
+    .chart-legend {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .detailed-day-header {
+        flex-direction: column;
+        text-align: center;
+        gap: var(--spacing-sm);
+    }
+}
+
+/* =========================================================================
+   ESTILOS PARA MODO OSCURO - PRONÓSTICO
+   ========================================================================= */
+
+/* Botones en modo oscuro */
+.dark-mode .glass-button {
+    background: rgba(30, 41, 59, 0.8) !important;
+    border: 1px solid rgba(100, 116, 139, 0.4) !important;
+    color: #f1f5f9 !important;
+}
+
+.dark-mode .glass-button:hover {
+    background: rgba(51, 65, 85, 0.9) !important;
+    color: #ffffff !important;
+}
+
+/* Cards diarias en modo oscuro */
+.dark-mode .daily-card {
+    background: rgba(30, 41, 59, 0.8) !important;
+    border: 1px solid rgba(100, 116, 139, 0.4) !important;
+    color: #f1f5f9 !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+}
+
+.dark-mode .daily-card.selected {
+    border-color: rgba(59, 130, 246, 0.8) !important;
+    background: rgba(59, 130, 246, 0.2) !important;
+}
+
+/* Texto en cards diarias - modo oscuro */
+.dark-mode .daily-date {
+    color: #f1f5f9 !important;
+}
+
+.dark-mode .temp-max {
+    color: #ffffff !important;
+}
+
+.dark-mode .temp-min {
+    color: #f1f5f9 !important;
+}
+
+.dark-mode .daily-precipitation {
+    color: #f1f5f9 !important;
+}
+
+/* Contenedor de gráfica en modo oscuro */
+.dark-mode .chart-container,
+.dark-mode .large-chart-container {
+    background: rgba(30, 41, 59, 0.5) !important;
+    border: 1px solid rgba(100, 116, 139, 0.3) !important;
+}
+
+/* Botón de navegación en modo oscuro */
+.dark-mode .chart-nav-button {
+    background: rgba(30, 41, 59, 0.8) !important;
+    border: 1px solid rgba(100, 116, 139, 0.4) !important;
+    color: #f1f5f9 !important;
+}
+
+.dark-mode .chart-nav-button:hover {
+    background: rgba(51, 65, 85, 0.9) !important;
+    color: #60a5fa !important;
+}
+
+/* Leyenda en modo oscuro */
+.dark-mode .legend-item-large {
+    background: rgba(30, 41, 59, 0.5) !important;
+    border: 1px solid rgba(100, 116, 139, 0.3) !important;
+}
+
+.dark-mode .legend-title {
+    color: #f1f5f9 !important;
+}
+
+.dark-mode .legend-description {
+    color: #f1f5f9 !important;
+}
+
+/* Leyenda en modo oscuro */
+.dark-mode .legend-label {
+    color: #f1f5f9 !important;
+}
+
+/* Cards detalladas en modo oscuro */
+.dark-mode .detailed-day-card {
+    background: rgba(30, 41, 59, 0.8) !important;
+    border: 1px solid rgba(100, 116, 139, 0.4) !important;
+}
+
+.dark-mode .detailed-day-card:hover {
+    background: rgba(51, 65, 85, 0.9) !important;
+}
+
+.dark-mode .detailed-day-header {
+    border-bottom: 1px solid rgba(100, 116, 139, 0.4) !important;
+}
+
+.dark-mode .detailed-day-title {
+    color: #f1f5f9 !important;
+}
+
+.dark-mode .detailed-stat-label {
+    color: #f1f5f9 !important;
+}
+
+.dark-mode .detailed-stat-value {
+    color: #ffffff !important;
+}
+
+/* Títulos principales en modo oscuro */
+.dark-mode .title-main {
+    color: #f1f5f9 !important;
+}
+
+.dark-mode .title-section {
+    color: #f1f5f9 !important;
+}
+
+.dark-mode .location-text {
+    color: #f1f5f9 !important;
+}
+
+/* Animaciones */
+.fade-in-forecast {
+    animation: fadeInUp 0.6s ease-out forwards;
+    opacity: 0;
+}
+
+.fade-in-forecast.fade-in-delay-1 { animation-delay: 0.1s; }
+.fade-in-forecast.fade-in-delay-2 { animation-delay: 0.2s; }
+.fade-in-forecast.fade-in-delay-3 { animation-delay: 0.3s; }
+.fade-in-forecast.fade-in-delay-4 { animation-delay: 0.4s; }
+.fade-in-forecast.fade-in-delay-5 { animation-delay: 0.5s; }
+.fade-in-forecast.fade-in-delay-6 { animation-delay: 0.6s; }
+.fade-in-forecast.fade-in-delay-7 { animation-delay: 0.7s; }
