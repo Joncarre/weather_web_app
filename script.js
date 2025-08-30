@@ -7,12 +7,54 @@
 // CONFIGURACIÓN Y CONSTANTES
 // ========================================================================
 
-const CONFIG = {
-    API_KEY: '', // TODO: Añadir tu API key de OpenWeatherMap
+// ========================================================================
+// CONFIGURACIÓN Y CONSTANTES MEJORADAS
+// ========================================================================
+
+// ========================================================================
+// CONFIGURACIÓN Y CONSTANTES MEJORADAS
+// ========================================================================
+
+// Usar configuración externa si está disponible, sino usar defaults
+const CONFIG = typeof APP_CONFIG !== 'undefined' ? {
+    API_KEY: APP_CONFIG.API_KEY,
+    BASE_URL: APP_CONFIG.BASE_URL,
+    UNITS: APP_CONFIG.UNITS,
+    LANG: APP_CONFIG.LANG,
+    DEFAULT_CITY: APP_CONFIG.DEFAULT_CITY,
+    
+    // Configuración de caché
+    CACHE_DURATION: APP_CONFIG.CACHE_DURATION || 10 * 60 * 1000,
+    
+    // Configuración de geolocalización
+    GEO_OPTIONS: APP_CONFIG.GEO_OPTIONS || {
+        enableHighAccuracy: true,
+        timeout: 15000,
+        maximumAge: 5 * 60 * 1000
+    },
+    
+    // Rate limiting
+    MIN_REQUEST_INTERVAL: APP_CONFIG.MIN_REQUEST_INTERVAL || 1000,
+    
+    // Retry configuration
+    MAX_RETRIES: APP_CONFIG.MAX_RETRIES || 3,
+    RETRY_DELAY: APP_CONFIG.RETRY_DELAY || 2000
+} : {
+    // Fallback configuration
+    API_KEY: 'TU_API_KEY_AQUI',
     BASE_URL: 'https://api.openweathermap.org/data/2.5',
     UNITS: 'metric',
     LANG: 'es',
-    DEFAULT_CITY: 'Madrid'
+    DEFAULT_CITY: 'Madrid',
+    CACHE_DURATION: 10 * 60 * 1000,
+    GEO_OPTIONS: {
+        enableHighAccuracy: true,
+        timeout: 15000,
+        maximumAge: 5 * 60 * 1000
+    },
+    MIN_REQUEST_INTERVAL: 1000,
+    MAX_RETRIES: 3,
+    RETRY_DELAY: 2000
 };
 
 // Elementos DOM principales
@@ -29,34 +71,100 @@ const elements = {
 };
 
 // ========================================================================
-// ESTADO GLOBAL DE LA APLICACIÓN
+// ESTADO GLOBAL DE LA APLICACIÓN MEJORADO
 // ========================================================================
 
 const appState = {
     currentLocation: null,
     weatherData: null,
     forecastData: null,
-    lastUpdate: null
+    lastUpdate: null,
+    isLoading: false,
+    hasError: false,
+    retryCount: 0,
+    
+    // Cache simple
+    cache: new Map(),
+    
+    // Rate limiting
+    lastRequestTime: 0
 };
 
 // ========================================================================
-// FUNCIONES DE UTILIDAD
+// FUNCIONES DE UTILIDAD MEJORADAS
 // ========================================================================
 
 /**
- * Muestra un mensaje de error al usuario
+ * Genera una clave de caché para las requests
  */
-function showError(message) {
-    elements.errorMessage.textContent = message;
-    elements.errorModal.classList.remove('hidden');
-    elements.loadingScreen.classList.add('hidden');
+function getCacheKey(endpoint, params) {
+    const sortedParams = Object.keys(params).sort().map(key => `${key}:${params[key]}`).join('|');
+    return `${endpoint}|${sortedParams}`;
 }
 
 /**
- * Oculta el modal de error
+ * Verifica si los datos en caché siguen siendo válidos
+ */
+function isCacheValid(cacheEntry) {
+    if (!cacheEntry) return false;
+    return (Date.now() - cacheEntry.timestamp) < CONFIG.CACHE_DURATION;
+}
+
+/**
+ * Implementa rate limiting para las requests
+ */
+function shouldWaitForRateLimit() {
+    const now = Date.now();
+    const timeSinceLastRequest = now - appState.lastRequestTime;
+    return timeSinceLastRequest < CONFIG.MIN_REQUEST_INTERVAL;
+}
+
+/**
+ * Espera el tiempo necesario para respetar rate limiting
+ */
+async function waitForRateLimit() {
+    if (shouldWaitForRateLimit()) {
+        const waitTime = CONFIG.MIN_REQUEST_INTERVAL - (Date.now() - appState.lastRequestTime);
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+    }
+    appState.lastRequestTime = Date.now();
+}
+
+/**
+ * Muestra un mensaje de error mejorado al usuario
+ */
+function showError(message, isRetryable = true) {
+    console.error('❌ Error:', message);
+    appState.hasError = true;
+    appState.isLoading = false;
+    
+    elements.errorMessage.textContent = message;
+    elements.errorModal.classList.remove('hidden');
+    elements.loadingScreen.classList.add('hidden');
+    
+    // Mostrar/ocultar botón de retry
+    if (isRetryable && appState.retryCount < CONFIG.MAX_RETRIES) {
+        elements.retryButton.style.display = 'block';
+    } else {
+        elements.retryButton.style.display = 'none';
+        elements.errorMessage.textContent += ' Por favor, recarga la página.';
+    }
+}
+
+/**
+ * Oculta el modal de error y resetea el estado
  */
 function hideError() {
     elements.errorModal.classList.add('hidden');
+    appState.hasError = false;
+}
+
+/**
+ * Actualiza el estado de carga con mensaje personalizado
+ */
+function updateLoadingState(message = 'Obteniendo tu clima...') {
+    appState.isLoading = true;
+    elements.loadingScreen.querySelector('p').textContent = message;
 }
 
 /**
@@ -109,71 +217,132 @@ function capitalize(str) {
 }
 
 // ========================================================================
-// GEOLOCALIZACIÓN
+// GEOLOCALIZACIÓN MEJORADA
 // ========================================================================
 
 /**
- * Obtiene la ubicación del usuario
+ * Obtiene la ubicación del usuario con retry y mejor manejo de errores
  */
 function getCurrentLocation() {
     return new Promise((resolve, reject) => {
         if (!navigator.geolocation) {
-            reject(new Error('La geolocalización no está soportada en este navegador'));
+            reject(new Error('❌ La geolocalización no está soportada en este navegador. Usa un navegador moderno.'));
             return;
         }
 
-        const options = {
-            enableHighAccuracy: true,
-            timeout: 10000,
-            maximumAge: 300000 // 5 minutos
+        updateLoadingState('📍 Detectando tu ubicación...');
+
+        // Función de éxito
+        const onSuccess = (position) => {
+            const coords = {
+                lat: position.coords.latitude,
+                lon: position.coords.longitude,
+                accuracy: position.coords.accuracy
+            };
+            
+            appState.currentLocation = coords;
+            console.log('✅ Ubicación obtenida:', coords);
+            resolve(coords);
         };
 
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                const coords = {
-                    lat: position.coords.latitude,
-                    lon: position.coords.longitude
-                };
-                appState.currentLocation = coords;
-                resolve(coords);
-            },
-            (error) => {
-                console.error('Error de geolocalización:', error);
-                let message = 'No se pudo obtener tu ubicación. ';
-                
-                switch(error.code) {
-                    case error.PERMISSION_DENIED:
-                        message += 'Permite el acceso a la ubicación para continuar.';
-                        break;
-                    case error.POSITION_UNAVAILABLE:
-                        message += 'La ubicación no está disponible.';
-                        break;
-                    case error.TIMEOUT:
-                        message += 'Se agotó el tiempo de espera.';
-                        break;
-                    default:
-                        message += 'Error desconocido.';
-                        break;
-                }
-                
+        // Función de error mejorada
+        const onError = (error) => {
+            console.error('❌ Error de geolocalización:', error);
+            let message = 'No se pudo obtener tu ubicación. ';
+            let isRetryable = true;
+            
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    message += 'Permite el acceso a la ubicación en tu navegador y recarga la página.';
+                    isRetryable = false;
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    message += 'Tu ubicación no está disponible. Verifica tu GPS o conexión.';
+                    break;
+                case error.TIMEOUT:
+                    message += 'Se agotó el tiempo de espera. Inténtalo de nuevo.';
+                    break;
+                default:
+                    message += 'Error desconocido al obtener la ubicación.';
+                    break;
+            }
+            
+            // Fallback a ubicación por defecto si está disponible
+            if (error.code === error.PERMISSION_DENIED) {
+                message += ` Mostrando clima de ${CONFIG.DEFAULT_CITY}.`;
+                getLocationFromCity(CONFIG.DEFAULT_CITY)
+                    .then(coords => resolve(coords))
+                    .catch(() => reject(new Error(message)));
+            } else {
                 reject(new Error(message));
-            },
-            options
-        );
+            }
+        };
+
+        // Hacer la request de geolocalización
+        navigator.geolocation.getCurrentPosition(onSuccess, onError, CONFIG.GEO_OPTIONS);
     });
 }
 
+/**
+ * Obtiene coordenadas a partir del nombre de una ciudad (fallback)
+ */
+async function getLocationFromCity(cityName) {
+    try {
+        await waitForRateLimit();
+        
+        const response = await fetch(
+            `${CONFIG.BASE_URL}/weather?q=${encodeURIComponent(cityName)}&appid=${CONFIG.API_KEY}&units=${CONFIG.UNITS}&lang=${CONFIG.LANG}`
+        );
+        
+        if (!response.ok) {
+            throw new Error(`Error al obtener datos de ${cityName}`);
+        }
+        
+        const data = await response.json();
+        return {
+            lat: data.coord.lat,
+            lon: data.coord.lon,
+            fromCity: true
+        };
+    } catch (error) {
+        throw new Error(`No se pudo obtener la ubicación de ${cityName}: ${error.message}`);
+    }
+}
+
+/**
+ * Verifica si el usuario ha cambiado de ubicación significativamente
+ */
+function hasLocationChanged(newCoords, oldCoords, threshold = 0.01) {
+    if (!oldCoords) return true;
+    
+    const latDiff = Math.abs(newCoords.lat - oldCoords.lat);
+    const lonDiff = Math.abs(newCoords.lon - oldCoords.lon);
+    
+    return latDiff > threshold || lonDiff > threshold;
+}
+
 // ========================================================================
-// API DEL CLIMA
+// API DEL CLIMA MEJORADA CON CACHE Y RETRY
 // ========================================================================
 
 /**
- * Realiza una llamada a la API de OpenWeatherMap
+ * Realiza una llamada a la API con cache, retry y rate limiting
  */
-async function apiCall(endpoint, params = {}) {
-    if (!CONFIG.API_KEY) {
-        throw new Error('API Key no configurada. Por favor, añade tu clave de OpenWeatherMap.');
+async function apiCall(endpoint, params = {}, useCache = true) {
+    // Verificar API key
+    if (!CONFIG.API_KEY || CONFIG.API_KEY === 'TU_API_KEY_AQUI') {
+        throw new Error('⚠️ API Key no configurada. Ve a script.js línea 17 y añade tu clave de OpenWeatherMap.\n\nPuedes obtener una gratis en: https://openweathermap.org/api');
     }
+
+    // Verificar caché
+    const cacheKey = getCacheKey(endpoint, params);
+    if (useCache && isCacheValid(appState.cache.get(cacheKey))) {
+        console.log('📦 Usando datos en caché para:', endpoint);
+        return appState.cache.get(cacheKey).data;
+    }
+
+    // Rate limiting
+    await waitForRateLimit();
 
     const url = new URL(`${CONFIG.BASE_URL}/${endpoint}`);
     url.searchParams.append('appid', CONFIG.API_KEY);
@@ -184,40 +353,121 @@ async function apiCall(endpoint, params = {}) {
         url.searchParams.append(key, value);
     });
 
-    try {
-        const response = await fetch(url);
-        
-        if (!response.ok) {
-            if (response.status === 401) {
-                throw new Error('API Key inválida. Verifica tu clave de OpenWeatherMap.');
-            } else if (response.status === 404) {
-                throw new Error('Ubicación no encontrada.');
-            } else {
-                throw new Error(`Error del servidor: ${response.status}`);
+    let lastError;
+
+    // Implementar retry logic
+    for (let attempt = 0; attempt <= CONFIG.MAX_RETRIES; attempt++) {
+        try {
+            console.log(`🌐 API Request (intento ${attempt + 1}/${CONFIG.MAX_RETRIES + 1}):`, url.toString());
+            
+            const response = await fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                },
+                // Timeout personalizado
+                signal: AbortSignal.timeout(10000)
+            });
+            
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                
+                if (response.status === 401) {
+                    throw new Error('🔑 API Key inválida o expirada. Verifica tu clave de OpenWeatherMap.');
+                } else if (response.status === 404) {
+                    throw new Error('📍 Ubicación no encontrada. Inténtalo con otra ubicación.');
+                } else if (response.status === 429) {
+                    throw new Error('⏳ Demasiadas solicitudes. Espera un momento e inténtalo de nuevo.');
+                } else if (response.status >= 500) {
+                    throw new Error(`🔧 Error del servidor de OpenWeatherMap (${response.status}). Inténtalo más tarde.`);
+                } else {
+                    throw new Error(`❌ Error de API: ${response.status} - ${errorData.message || 'Error desconocido'}`);
+                }
             }
+            
+            const data = await response.json();
+            
+            // Guardar en caché
+            appState.cache.set(cacheKey, {
+                data: data,
+                timestamp: Date.now()
+            });
+            
+            console.log('✅ Datos obtenidos exitosamente:', endpoint);
+            return data;
+            
+        } catch (error) {
+            lastError = error;
+            console.warn(`⚠️ Intento ${attempt + 1} falló:`, error.message);
+            
+            // Si es el último intento, lanzar el error
+            if (attempt === CONFIG.MAX_RETRIES) {
+                break;
+            }
+            
+            // Esperar antes del próximo intento
+            await new Promise(resolve => setTimeout(resolve, CONFIG.RETRY_DELAY * (attempt + 1)));
         }
-        
-        return await response.json();
-    } catch (error) {
-        if (error instanceof TypeError) {
-            throw new Error('Sin conexión a internet. Verifica tu conexión.');
-        }
-        throw error;
+    }
+    
+    // Si llegamos aquí, todos los intentos fallaron
+    if (lastError.name === 'AbortError') {
+        throw new Error('⏱️ Conexión muy lenta. Verifica tu internet e inténtalo de nuevo.');
+    } else if (lastError instanceof TypeError) {
+        throw new Error('🌐 Sin conexión a internet. Verifica tu conectividad.');
+    } else {
+        throw lastError;
     }
 }
 
 /**
- * Obtiene los datos del clima actual
+ * Obtiene los datos del clima actual con validación mejorada
  */
 async function getCurrentWeather(lat, lon) {
-    return await apiCall('weather', { lat, lon });
+    updateLoadingState('🌡️ Obteniendo temperatura actual...');
+    
+    const data = await apiCall('weather', { 
+        lat: lat.toFixed(6), 
+        lon: lon.toFixed(6) 
+    });
+    
+    // Validar datos recibidos
+    if (!data.main || !data.weather || !data.weather[0]) {
+        throw new Error('📊 Datos del clima incompletos. Inténtalo de nuevo.');
+    }
+    
+    return data;
 }
 
 /**
- * Obtiene el pronóstico de 7 días
+ * Obtiene el pronóstico de 5 días con validación
  */
 async function getForecast(lat, lon) {
-    return await apiCall('forecast', { lat, lon });
+    updateLoadingState('📅 Obteniendo pronóstico...');
+    
+    const data = await apiCall('forecast', { 
+        lat: lat.toFixed(6), 
+        lon: lon.toFixed(6) 
+    });
+    
+    // Validar datos recibidos
+    if (!data.list || data.list.length === 0) {
+        throw new Error('📊 Datos del pronóstico incompletos. Inténtalo de nuevo.');
+    }
+    
+    return data;
+}
+
+/**
+ * Limpia el cache antiguo para evitar memory leaks
+ */
+function cleanupCache() {
+    const now = Date.now();
+    for (const [key, value] of appState.cache.entries()) {
+        if (now - value.timestamp > CONFIG.CACHE_DURATION) {
+            appState.cache.delete(key);
+        }
+    }
 }
 
 // ========================================================================
@@ -382,18 +632,44 @@ function applyWeatherEffects(weatherCode, main) {
 }
 
 // ========================================================================
-// FUNCIONES PRINCIPALES
+// FUNCIONES PRINCIPALES MEJORADAS
 // ========================================================================
 
 /**
- * Carga todos los datos del clima
+ * Carga todos los datos del clima con mejor manejo de errores
  */
-async function loadWeatherData() {
+async function loadWeatherData(forceRefresh = false) {
     try {
+        // Evitar múltiples requests simultáneas
+        if (appState.isLoading && !forceRefresh) {
+            console.log('⚠️ Ya hay una carga en progreso...');
+            return;
+        }
+
+        appState.isLoading = true;
+        appState.hasError = false;
+        
+        // Limpiar cache antiguo
+        cleanupCache();
+
         // Obtener ubicación
+        updateLoadingState('📍 Obteniendo tu ubicación...');
         const coords = await getCurrentLocation();
         
-        // Obtener datos del clima actual y pronóstico
+        // Verificar si necesitamos actualizar los datos
+        const needsUpdate = forceRefresh || 
+                           hasLocationChanged(coords, appState.currentLocation) ||
+                           !appState.lastUpdate || 
+                           (Date.now() - appState.lastUpdate) > CONFIG.CACHE_DURATION;
+
+        if (!needsUpdate && appState.weatherData && appState.forecastData) {
+            console.log('📦 Usando datos existentes (no hay cambios significativos)');
+            showMainContent();
+            return;
+        }
+
+        // Obtener datos del clima actual y pronóstico en paralelo
+        updateLoadingState('🌡️ Cargando datos del clima...');
         const [weatherData, forecastData] = await Promise.all([
             getCurrentWeather(coords.lat, coords.lon),
             getForecast(coords.lat, coords.lon)
@@ -403,59 +679,138 @@ async function loadWeatherData() {
         appState.weatherData = weatherData;
         appState.forecastData = forecastData;
         appState.lastUpdate = Date.now();
+        appState.retryCount = 0; // Reset retry count on success
 
-        // Renderizar datos
-        updateLocation(weatherData);
-        renderCurrentWeather(weatherData);
-        renderAdditionalInfo(weatherData);
-        renderForecast(forecastData);
-        
-        // Aplicar efectos visuales
-        applyWeatherEffects(weatherData.weather[0].id, weatherData.weather[0].main);
+        console.log('✅ Todos los datos cargados:', { weatherData, forecastData });
+
+        // Renderizar datos con animación
+        updateLoadingState('🎨 Preparando la interfaz...');
+        await renderAllData(weatherData, forecastData);
 
         // Mostrar contenido principal
         showMainContent();
 
-        console.log('✅ Datos del clima cargados exitosamente');
+        console.log('🎉 ¡Aplicación cargada exitosamente!');
 
     } catch (error) {
         console.error('❌ Error cargando datos del clima:', error);
-        showError(error.message);
+        appState.retryCount++;
+        showError(error.message, appState.retryCount < CONFIG.MAX_RETRIES);
+    } finally {
+        appState.isLoading = false;
     }
 }
 
 /**
- * Inicializa la aplicación
+ * Renderiza todos los datos con orden específico
+ */
+async function renderAllData(weatherData, forecastData) {
+    // Renderizar en orden para mejor UX
+    updateLocation(weatherData);
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    renderCurrentWeather(weatherData);
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    renderAdditionalInfo(weatherData);
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    renderForecast(forecastData);
+    
+    // Aplicar efectos visuales al final
+    applyWeatherEffects(weatherData.weather[0].id, weatherData.weather[0].main);
+}
+
+/**
+ * Actualiza los datos si han pasado más de X minutos
+ */
+async function refreshIfNeeded() {
+    if (!appState.lastUpdate || (Date.now() - appState.lastUpdate) > CONFIG.CACHE_DURATION) {
+        console.log('🔄 Actualizando datos automáticamente...');
+        await loadWeatherData(true);
+    }
+}
+
+/**
+ * Inicializa la aplicación con mejor manejo de estados
  */
 async function initApp() {
-    console.log('🚀 Inicializando Clima Minimalista...');
+    console.log('🚀 Inicializando Clima Minimalista v2.0...');
+    
+    // Verificar compatibilidad del navegador
+    if (!window.fetch) {
+        showError('❌ Tu navegador no es compatible. Usa un navegador moderno como Chrome, Firefox o Safari.', false);
+        return;
+    }
     
     // Inicializar iconos de Lucide
     if (typeof lucide !== 'undefined') {
         lucide.createIcons();
+        console.log('✅ Iconos de Lucide inicializados');
+    } else {
+        console.warn('⚠️ Lucide Icons no disponible');
     }
     
     // Cargar datos del clima
     await loadWeatherData();
+    
+    // Configurar auto-refresh cada 10 minutos
+    setInterval(refreshIfNeeded, CONFIG.CACHE_DURATION);
 }
 
 // ========================================================================
-// EVENT LISTENERS
+// EVENT LISTENERS MEJORADOS
 // ========================================================================
 
 // Event Listener para el botón de reintentar
-elements.retryButton.addEventListener('click', () => {
+elements.retryButton.addEventListener('click', async () => {
+    console.log('🔄 Reintentando cargar datos...');
     hideError();
     elements.loadingScreen.classList.remove('hidden');
     elements.mainContent.classList.add('hidden');
-    loadWeatherData();
+    
+    // Esperar un poco para mostrar el loading
+    await new Promise(resolve => setTimeout(resolve, 500));
+    await loadWeatherData(true);
 });
 
-// Event Listener para refresh manual (opcional)
-document.addEventListener('keydown', (event) => {
+// Event Listener para refresh manual con teclado
+document.addEventListener('keydown', async (event) => {
     if (event.key === 'F5' || (event.ctrlKey && event.key === 'r')) {
         event.preventDefault();
-        location.reload();
+        console.log('⌨️ Refresh manual detectado');
+        
+        if (!appState.isLoading) {
+            elements.loadingScreen.classList.remove('hidden');
+            elements.mainContent.classList.add('hidden');
+            await new Promise(resolve => setTimeout(resolve, 300));
+            await loadWeatherData(true);
+        }
+    }
+});
+
+// Event listener para detectar cambios de conectividad
+window.addEventListener('online', async () => {
+    console.log('🌐 Conexión restaurada');
+    if (appState.hasError) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        await loadWeatherData(true);
+    }
+});
+
+window.addEventListener('offline', () => {
+    console.log('📡 Conexión perdida');
+    showError('🌐 Sin conexión a internet. Los datos mostrados pueden no estar actualizados.', true);
+});
+
+// Event listener para visibilidad de la página (actualizar cuando vuelve el usuario)
+document.addEventListener('visibilitychange', async () => {
+    if (!document.hidden && !appState.isLoading) {
+        // Si el usuario vuelve después de más de 10 minutos, actualizar
+        if (appState.lastUpdate && (Date.now() - appState.lastUpdate) > CONFIG.CACHE_DURATION) {
+            console.log('👁️ Usuario regresó - actualizando datos...');
+            await loadWeatherData(true);
+        }
     }
 });
 
@@ -511,5 +866,5 @@ function loadMockData() {
     }, 2000);
 }
 
-// Testing con datos de prueba (descomenta para probar sin API):
-document.addEventListener('DOMContentLoaded', loadMockData);
+// Testing con datos de prueba (comentado para usar API real):
+// document.addEventListener('DOMContentLoaded', loadMockData);
