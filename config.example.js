@@ -1,20 +1,18 @@
 /**
- * CONFIGURACIÓN DE LA APLICACIÓN DEL CLIMA
+ * CONFIGURACIÓN PÚBLICA DE LA APLICACIÓN DEL CLIMA
+ * ⚠️ ESTE ARCHIVO SÍ SE SUBE AL REPOSITORIO - NO PONGAS API KEYS AQUÍ
  * 
- * INSTRUCCIONES RÁPIDAS:
- * 1. Regístrate GRATIS en: https://openweathermap.org/api
- * 2. Obtén tu API key (tarda 2 horas en activarse)
- * 3. Reemplaza 'TU_API_KEY_AQUI' con tu clave real
- * 4. Guarda este archivo
- * 
- * EJEMPLO: const OPENWEATHER_API_KEY = 'abc123def456...';
+ * Para usar la aplicación:
+ * 1. Copia este archivo como 'config.js'
+ * 2. Añade tu API key en config.js
+ * 3. config.js está protegido en .gitignore
  */
 
-// 👇 CAMBIA ESTA LÍNEA CON TU API KEY 👇
-const OPENWEATHER_API_KEY = 'e8b1015aa39f37d669913bbfc8dabe30';
+// 👇 EJEMPLO - NO PONGAS TU API KEY REAL AQUÍ 👇
+const OPENWEATHER_API_KEY = 'TU_API_KEY_AQUI';
 
 // ========================================================================
-// CONFIGURACIÓN AVANZADA (Opcional - no tocar a menos que sepas qué haces)
+// CONFIGURACIÓN PÚBLICA (OK para repositorio)
 // ========================================================================
 
 const APP_CONFIG = {
@@ -54,7 +52,7 @@ function validateConfig() {
     const issues = [];
     
     if (!OPENWEATHER_API_KEY || OPENWEATHER_API_KEY === 'TU_API_KEY_AQUI') {
-        issues.push('❌ API Key no configurada');
+        issues.push('❌ API Key no configurada - copia config.example.js como config.js y añade tu clave');
     }
     
     if (OPENWEATHER_API_KEY && OPENWEATHER_API_KEY.length < 20) {
