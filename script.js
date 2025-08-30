@@ -87,7 +87,12 @@ const appState = {
     cache: new Map(),
     
     // Rate limiting
-    lastRequestTime: 0
+    lastRequestTime: 0,
+    
+    // Tema automático
+    currentTheme: 'light',
+    sunriseTime: null,
+    sunsetTime: null
 };
 
 // ========================================================================
@@ -165,6 +170,89 @@ function hideError() {
 function updateLoadingState(message = 'Obteniendo tu clima...') {
     appState.isLoading = true;
     elements.loadingScreen.querySelector('p').textContent = message;
+}
+
+// ========================================================================
+// SISTEMA DE TEMA AUTOMÁTICO
+// ========================================================================
+
+/**
+ * Aplica un tema (light o dark) al documento
+ */
+function applyTheme(theme) {
+    const root = document.documentElement;
+    
+    if (theme === 'dark') {
+        root.setAttribute('data-theme', 'dark');
+    } else {
+        root.removeAttribute('data-theme');
+    }
+    
+    appState.currentTheme = theme;
+    console.log(`🎨 Tema aplicado automáticamente: ${theme}`);
+}
+
+/**
+ * Determina si debe ser modo oscuro basado en la hora actual y datos de sol
+ */
+function shouldUseDarkMode() {
+    if (!appState.sunriseTime || !appState.sunsetTime) {
+        // Fallback: usar horario básico si no hay datos de sol
+        const hour = new Date().getHours();
+        return hour < 6 || hour >= 19; // 7 PM - 6 AM
+    }
+    
+    const now = Date.now() / 1000; // Convertir a timestamp Unix
+    
+    // Si es después del ocaso o antes del amanecer, usar modo oscuro
+    return now > appState.sunsetTime || now < appState.sunriseTime;
+}
+
+/**
+ * Actualiza el tema automáticamente basado en la hora
+ */
+function updateThemeBasedOnTime() {
+    const shouldBeDark = shouldUseDarkMode();
+    const newTheme = shouldBeDark ? 'dark' : 'light';
+    
+    if (newTheme !== appState.currentTheme) {
+        console.log(`⏰ Cambio automático de tema: ${appState.currentTheme} → ${newTheme}`);
+        applyTheme(newTheme);
+    }
+}
+
+/**
+ * Extrae los datos de amanecer y ocaso de la respuesta de la API
+ */
+function extractSunTimes(weatherData) {
+    if (weatherData.sys && weatherData.sys.sunrise && weatherData.sys.sunset) {
+        appState.sunriseTime = weatherData.sys.sunrise;
+        appState.sunsetTime = weatherData.sys.sunset;
+        
+        // Formatear horas para debug
+        const sunrise = new Date(weatherData.sys.sunrise * 1000).toLocaleTimeString('es-ES');
+        const sunset = new Date(weatherData.sys.sunset * 1000).toLocaleTimeString('es-ES');
+        
+        console.log(`🌅 Amanecer: ${sunrise}`);
+        console.log(`🌇 Ocaso: ${sunset}`);
+        
+        return true;
+    }
+    return false;
+}
+
+/**
+ * Inicializa el sistema de tema automático
+ */
+function initThemeSystem() {
+    // Aplicar tema inicial basado en la hora actual
+    updateThemeBasedOnTime();
+    
+    // Actualizar tema automáticamente cada minuto
+    setInterval(updateThemeBasedOnTime, 60000);
+    
+    console.log('🎨 Sistema de tema automático inicializado');
+    console.log('🌅 El tema cambiará automáticamente con el amanecer y ocaso');
 }
 
 /**
@@ -606,6 +694,12 @@ function updateLocation(data) {
  * Renderiza el clima actual con el nuevo sistema de diseño
  */
 function renderCurrentWeather(data) {
+    // Extraer datos de amanecer y ocaso para el sistema de tema
+    extractSunTimes(data);
+    
+    // Actualizar tema basado en los nuevos datos de sol
+    updateThemeBasedOnTime();
+    
     const iconMap = {
         'clear sky': '☀️',
         'few clouds': '🌤️',
@@ -854,6 +948,9 @@ async function initApp() {
         showError('❌ Tu navegador no es compatible. Usa un navegador moderno como Chrome, Firefox o Safari.', false);
         return;
     }
+    
+    // Inicializar sistema de tema automático
+    initThemeSystem();
     
     // Inicializar iconos de Lucide
     if (typeof lucide !== 'undefined') {
