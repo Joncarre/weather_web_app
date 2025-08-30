@@ -7,11 +7,12 @@ En resumen: una aplicación web del tiempo que es responsive y minimalista, opti
 ## Características Principales
 
 - **100% Responsive** - Diseño mobile-first optimizado
-- **Diseño Minimalista** - Colores pasteles suaves y tipografía clara
-- **Geolocalización Automática** - Detecta tu ubicación al instante
-- **Actualización en Tiempo Real** - Datos siempre actualizados
+- **Diseño minimalista** - Colores pasteles suaves y tipografía clara
+- **Modo oscuro automático** - A partir del ocaso, la aplicación pasa a modo oscuro
+- **Geolocalización automática** - Detecta tu ubicación al instante
+- **Actualización en tiempo real** - Datos siempre actualizados
 - **Accesible** - Optimizado para personas mayores
-- **Sin Anuncios** - Experiencia limpia y sin distracciones
+- **Sin anuncios** - Experiencia limpia y sin distracciones
 
 ## Funcionalidades
 
