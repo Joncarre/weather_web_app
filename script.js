@@ -210,10 +210,122 @@ function formatTime(timestamp) {
 }
 
 /**
- * Capitaliza la primera letra de un string
+ * Capitaliza solo la primera letra de una frase completa
  */
 function capitalize(str) {
-    return str.charAt(0).toUpperCase() + str.slice(1);
+    if (!str) return '';
+    // Convertir todo a minúsculas primero, luego capitalizar solo la primera letra
+    return str.toLowerCase().charAt(0).toUpperCase() + str.toLowerCase().slice(1);
+}
+
+/**
+ * Calcula el porcentaje de precipitación basado en los datos del clima
+ */
+function getPrecipitationChance(data) {
+    // Si hay datos de lluvia o nieve actuales
+    let precipitationMm = 0;
+    
+    // Lluvia en la última hora
+    if (data.rain && data.rain['1h']) {
+        precipitationMm += data.rain['1h'];
+    }
+    
+    // Nieve en la última hora
+    if (data.snow && data.snow['1h']) {
+        precipitationMm += data.snow['1h'];
+    }
+    
+    // Si hay precipitación activa, mostrar cantidad
+    if (precipitationMm > 0) {
+        return `${precipitationMm.toFixed(1)} mm/h`;
+    }
+    
+    // Calcular probabilidad basada en humedad y tipo de clima
+    const humidity = data.main.humidity;
+    const weatherMain = data.weather[0].main.toLowerCase();
+    
+    let chance = 0;
+    
+    switch (weatherMain) {
+        case 'rain':
+        case 'drizzle':
+            chance = Math.min(90 + (humidity - 70), 95);
+            break;
+        case 'snow':
+            chance = Math.min(85 + (humidity - 65), 95);
+            break;
+        case 'thunderstorm':
+            chance = Math.min(95 + (humidity - 75), 98);
+            break;
+        case 'clouds':
+            if (humidity > 80) chance = Math.min(30 + (humidity - 80) * 2, 70);
+            else if (humidity > 60) chance = Math.min(10 + (humidity - 60), 30);
+            break;
+        case 'clear':
+            if (humidity > 90) chance = 15;
+            else if (humidity > 80) chance = 5;
+            break;
+        default:
+            chance = Math.max(0, (humidity - 70) / 2);
+    }
+    
+    return `${Math.round(Math.max(0, chance))}%`;
+}
+
+/**
+ * Obtiene el índice UV (requiere una llamada adicional a la API)
+ */
+async function getUVIndex(lat, lon) {
+    try {
+        await waitForRateLimit();
+        
+        const response = await fetch(
+            `${CONFIG.BASE_URL}/uvi?lat=${lat}&lon=${lon}&appid=${CONFIG.API_KEY}`
+        );
+        
+        if (!response.ok) {
+            console.warn('⚠️ No se pudo obtener datos UV');
+            return null;
+        }
+        
+        const uvData = await response.json();
+        return uvData.value || null;
+    } catch (error) {
+        console.warn('⚠️ Error obteniendo UV index:', error);
+        return null;
+    }
+}
+
+/**
+ * Obtiene datos de clima ampliados incluyendo UV
+ */
+async function getCurrentWeatherExtended(lat, lon) {
+    updateLoadingState('🌡️ Obteniendo temperatura actual...');
+    
+    // Obtener datos básicos del clima
+    const weatherData = await apiCall('weather', { 
+        lat: lat.toFixed(6), 
+        lon: lon.toFixed(6) 
+    });
+    
+    // Validar datos recibidos
+    if (!weatherData.main || !weatherData.weather || !weatherData.weather[0]) {
+        throw new Error('📊 Datos del clima incompletos. Inténtalo de nuevo.');
+    }
+    
+    // Intentar obtener índice UV por separado
+    try {
+        updateLoadingState('☀️ Obteniendo índice UV...');
+        const uvIndex = await getUVIndex(lat, lon);
+        if (uvIndex !== null) {
+            weatherData.uvi = uvIndex;
+        }
+    } catch (error) {
+        console.warn('⚠️ UV index no disponible:', error);
+        // Continuar sin UV index
+    }
+    
+    return weatherData;
 }
 
 // ========================================================================
@@ -543,16 +655,16 @@ function renderAdditionalInfo(data) {
             lucideIcon: 'wind'
         },
         {
-            icon: '�',
-            label: 'Presión',
-            value: `${data.main.pressure} hPa`,
-            lucideIcon: 'gauge'
+            icon: '☀️',
+            label: 'Índice UV',
+            value: data.uvi ? Math.round(data.uvi) : 'N/A',
+            lucideIcon: 'sun'
         },
         {
-            icon: '👁️',
-            label: 'Visibilidad',
-            value: data.visibility ? `${Math.round(data.visibility / 1000)} km` : 'N/A',
-            lucideIcon: 'eye'
+            icon: '🌧️',
+            label: 'Precipitación',
+            value: getPrecipitationChance(data),
+            lucideIcon: 'cloud-rain'
         }
     ];
 
@@ -671,7 +783,7 @@ async function loadWeatherData(forceRefresh = false) {
         // Obtener datos del clima actual y pronóstico en paralelo
         updateLoadingState('🌡️ Cargando datos del clima...');
         const [weatherData, forecastData] = await Promise.all([
-            getCurrentWeather(coords.lat, coords.lon),
+            getCurrentWeatherExtended(coords.lat, coords.lon),
             getForecast(coords.lat, coords.lon)
         ]);
 
@@ -849,12 +961,15 @@ function loadMockData() {
             humidity: 65
         },
         weather: [{
-            id: 800,
-            main: 'Clear',
-            description: 'cielo despejado',
-            icon: '01d'
+            id: 803,
+            main: 'Clouds',
+            description: 'algo de nubes',
+            icon: '03d'
         }],
-        wind: { speed: 3.2 }
+        wind: { speed: 3.2 },
+        uvi: 6.5, // Índice UV de prueba
+        rain: null, // Sin lluvia actualmente
+        snow: null  // Sin nieve actualmente
     };
 
     setTimeout(() => {

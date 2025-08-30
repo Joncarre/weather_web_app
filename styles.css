@@ -306,11 +306,13 @@ body {
     padding: var(--spacing-lg);
     text-align: center;
     transition: var(--transition-fast);
+    box-shadow: var(--shadow-soft);
 }
 
 .info-card:hover {
     background: var(--bg-glass-primary);
     transform: translateY(-2px);
+    box-shadow: var(--shadow-medium);
 }
 
 /* Iconos de Información */
@@ -386,7 +388,6 @@ body {
     font-size: clamp(1.125rem, 3vw, 1.25rem);
     font-weight: 500;
     color: var(--color-text-secondary);
-    text-transform: capitalize;
     margin-bottom: var(--spacing-md);
 }
 
@@ -408,7 +409,6 @@ body {
     color: var(--color-text-tertiary);
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    margin-bottom: var(--spacing-xs);
 }
 
 .data-value {
