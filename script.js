@@ -788,21 +788,6 @@ function renderForecast(data) {
         return;
     }
     
-    // Procesar datos por días (tomar uno por día a las 12:00)
-    const dailyData = [];
-    const processedDates = new Set();
-    
-    data.list.forEach(item => {
-        const date = new Date(item.dt * 1000);
-        const dateKey = date.toDateString();
-        
-        // Tomar solo un pronóstico por día (preferiblemente al mediodía)
-        if (!processedDates.has(dateKey) && dailyData.length < 7) {
-            processedDates.add(dateKey);
-            dailyData.push(item);
-        }
-    });
-    
     // Mapeo de iconos
     const iconMap = {
         'cielo claro': '☀️',
@@ -819,10 +804,50 @@ function renderForecast(data) {
         'default': '☀️'
     };
     
+    // Procesar datos por días - agrupar para obtener máximas y mínimas reales
+    const dailyData = [];
+    const dailyMap = new Map();
+    
+    data.list.forEach(item => {
+        const date = new Date(item.dt * 1000);
+        const dateKey = date.toDateString();
+        
+        if (!dailyMap.has(dateKey)) {
+            dailyMap.set(dateKey, {
+                date: date,
+                temps: [],
+                precipitation: [],
+                weather: item.weather[0],
+                icon: iconMap[item.weather[0].description] || iconMap['default']
+            });
+        }
+        
+        const dayData = dailyMap.get(dateKey);
+        dayData.temps.push(item.main.temp);
+        dayData.precipitation.push(item.pop * 100);
+        
+        // Usar el icono del mediodía si está disponible (12:00)
+        const hour = date.getHours();
+        if (hour >= 11 && hour <= 13) {
+            dayData.weather = item.weather[0];
+            dayData.icon = iconMap[item.weather[0].description] || iconMap['default'];
+        }
+    });
+    
+    // Convertir a array y calcular estadísticas reales
+    const processedDaily = Array.from(dailyMap.values()).slice(0, 7).map(day => ({
+        date: day.date,
+        tempMax: Math.round(Math.max(...day.temps)),
+        tempMin: Math.round(Math.min(...day.temps)),
+        weather: day.weather,
+        icon: day.icon,
+        precipitation: Math.round(day.precipitation.reduce((a, b) => a + b, 0) / day.precipitation.length)
+    }));
+    
     const today = new Date();
     
-    elements.forecastContainer.innerHTML = dailyData.map((item, index) => {
-        const date = new Date(item.dt * 1000);
+    elements.forecastContainer.innerHTML = processedDaily.map((dayData, index) => {
+        const date = dayData.date;
         const isToday = date.toDateString() === today.toDateString();
         const isTomorrow = date.toDateString() === new Date(today.getTime() + 24 * 60 * 60 * 1000).toDateString();
         
@@ -831,11 +856,10 @@ function renderForecast(data) {
         else if (isTomorrow) dayLabel = 'Mañana';
         else dayLabel = date.toLocaleDateString('es-ES', { weekday: 'short' }).replace('.', '');
         
-        const temp = Math.round(item.main.temp);
-        const tempMin = Math.round(item.main.temp_min);
-        const tempMax = Math.round(item.main.temp_max);
-        const icon = iconMap[item.weather[0].description] || iconMap['default'];
-        const precipitation = Math.round(item.pop * 100);
+        const tempMax = dayData.tempMax;
+        const tempMin = dayData.tempMin;
+        const icon = dayData.icon;
+        const precipitation = dayData.precipitation;
         
         return `
             <div class="forecast-day-card min-w-28 p-3 text-center bg-white/20 backdrop-blur-sm border border-white/30 rounded-xl">
@@ -858,6 +882,14 @@ function renderForecast(data) {
         lucide.createIcons();
     }
     
+    // Guardar datos del pronóstico en localStorage para la página de gráficas
+    try {
+        localStorage.setItem('forecastData', JSON.stringify(data));
+        console.log('📊 Datos del pronóstico guardados en localStorage');
+    } catch (error) {
+        console.warn('⚠️ Error guardando datos del pronóstico:', error);
+    }
+    
     // NO añadir evento de click al contenedor - solo mostrar información
     const forecastSection = document.getElementById('forecast');
     if (forecastSection && !forecastSection.hasAttribute('data-info-updated')) {
@@ -875,13 +907,23 @@ function renderForecast(data) {
  * Función para ir a la página de gráfica desde la página principal
  */
 function goToForecastChart() {
-    // Guardar datos del pronóstico en localStorage
+    // Obtener los datos actuales del clima y pronóstico
+    const weatherData = localStorage.getItem('weatherData');
     const forecastData = localStorage.getItem('forecastData');
-    if (forecastData) {
-        localStorage.setItem('chartData', forecastData);
+    
+    if (weatherData) {
+        // Guardar datos para la página de pronóstico
+        localStorage.setItem('chartData', forecastData || weatherData);
+        localStorage.setItem('forecastData', forecastData || weatherData);
+        
+        console.log('📊 Navegando a página de pronóstico con datos guardados');
+        // Navegar a la página de pronóstico extendido
+        window.location.href = 'forecast.html';
+    } else {
+        // Si no hay datos, mostrar mensaje de error
+        console.error('❌ No hay datos disponibles para mostrar el pronóstico');
+        alert('Primero necesitamos cargar los datos del clima. Por favor espera un momento.');
     }
-    // Navegar a la página de pronóstico extendido
-    window.location.href = 'forecast.html';
 }
 
 // ========================================================================
