@@ -635,6 +635,9 @@ function renderCurrentWeather(data) {
             </div>
         </div>
     `;
+
+    // Inicializar y activar efectos de clima
+    initializeWeatherEffects(data.weather[0].description);
 }
 
 /**
@@ -695,9 +698,9 @@ function renderForecast(data) {
 // ========================================================================
 
 /**
- * Aplica efectos visuales mejorados según el clima
+ * Aplica efectos visuales mejorados según el clima con prioridad
  */
-function applyWeatherEffects(weatherCode, main) {
+function applyWeatherEffects(weatherCode, main, weatherData) {
     // Remover todas las clases de clima anteriores
     const weatherClasses = [
         'weather-sunny', 'weather-partly-cloudy', 'weather-cloudy', 
@@ -707,34 +710,72 @@ function applyWeatherEffects(weatherCode, main) {
     
     document.body.classList.remove(...weatherClasses, 'rain-effect', 'snow-effect');
     
-    // Aplicar nueva clase según el código del clima
+    // Determinar el efecto basado en prioridad
     let weatherClass = 'weather-sunny'; // default
+    let shouldApplyEffect = false;
+    let effectDescription = '';
     
-    switch(main.toLowerCase()) {
-        case 'clear':
-            weatherClass = 'weather-sunny';
-            break;
-        case 'clouds':
-            // Distinguir entre parcialmente nublado y nublado
-            weatherClass = weatherCode >= 803 ? 'weather-cloudy' : 'weather-partly-cloudy';
-            break;
-        case 'rain':
-        case 'drizzle':
-            weatherClass = 'weather-rainy';
-            document.body.classList.add('rain-effect');
-            break;
-        case 'thunderstorm':
-            weatherClass = 'weather-stormy';
-            break;
-        case 'snow':
-            weatherClass = 'weather-snowy';
-            document.body.classList.add('snow-effect');
-            break;
-        case 'mist':
-        case 'fog':
-        case 'haze':
-            weatherClass = 'weather-foggy';
-            break;
+    const mainWeather = main.toLowerCase();
+    const windSpeed = weatherData && weatherData.wind ? (weatherData.wind.speed * 3.6) : 0; // Convertir m/s a km/h
+    
+    // Prioridad 1: Nieve (máxima prioridad)
+    if (mainWeather === 'snow') {
+        weatherClass = 'weather-snowy';
+        shouldApplyEffect = true;
+        effectDescription = 'nieve';
+        document.body.classList.add('snow-effect');
+    }
+    // Prioridad 2: Tormenta
+    else if (mainWeather === 'thunderstorm') {
+        weatherClass = 'weather-stormy';
+        shouldApplyEffect = true;
+        effectDescription = 'tormenta';
+    }
+    // Prioridad 3: Lluvia
+    else if (mainWeather === 'rain' || mainWeather === 'drizzle') {
+        weatherClass = 'weather-rainy';
+        shouldApplyEffect = true;
+        effectDescription = 'lluvia';
+        document.body.classList.add('rain-effect');
+    }
+    // Prioridad 4: Viento (solo si > 30 km/h)
+    else if (windSpeed > 30) {
+        weatherClass = 'weather-cloudy'; // Mantener fondo base
+        shouldApplyEffect = true;
+        effectDescription = `viento fuerte (${Math.round(windSpeed)} km/h)`;
+    }
+    // Otros casos: no aplicar efectos especiales
+    else {
+        switch(mainWeather) {
+            case 'clear':
+                weatherClass = 'weather-sunny';
+                break;
+            case 'clouds':
+                weatherClass = weatherCode >= 803 ? 'weather-cloudy' : 'weather-partly-cloudy';
+                break;
+            case 'mist':
+            case 'fog':
+            case 'haze':
+                weatherClass = 'weather-foggy';
+                break;
+        }
+    }
+    
+    // Aplicar efectos de partículas si corresponde
+    if (shouldApplyEffect && window.simpleWeatherEffects) {
+        try {
+            // Convertir tipo para el sistema de efectos
+            let effectType = '';
+            if (mainWeather === 'snow') effectType = 'snow';
+            else if (mainWeather === 'thunderstorm') effectType = 'thunderstorm';
+            else if (mainWeather === 'rain' || mainWeather === 'drizzle') effectType = 'rain';
+            else if (windSpeed > 30) effectType = 'wind';
+            
+            window.simpleWeatherEffects.showEffect(effectType);
+            console.log(`🌦️ Aplicando efecto: ${effectDescription}`);
+        } catch (error) {
+            console.warn('⚠️ Error aplicando efecto visual:', error);
+        }
     }
     
     // Aplicar la clase con una transición suave
@@ -829,8 +870,11 @@ async function renderAllData(weatherData, forecastData) {
     
     renderForecast(forecastData);
     
+    // Actualizar modo oscuro basado en horario solar
+    updateDarkModeBasedOnSunTimes(weatherData);
+    
     // Aplicar efectos visuales al final
-    applyWeatherEffects(weatherData.weather[0].id, weatherData.weather[0].main);
+    applyWeatherEffects(weatherData.weather[0].id, weatherData.weather[0].main, weatherData);
 }
 
 /**
@@ -980,6 +1024,289 @@ function loadMockData() {
         showMainContent();
     }, 2000);
 }
+
+// ========================================================================
+// INTEGRACIÓN DE EFECTOS DE CLIMA
+// ========================================================================
+
+/**
+ * Inicializa los efectos de clima
+ */
+async function initializeWeatherEffects(weatherCondition) {
+    try {
+        // Inicializar los efectos si no están inicializados
+        if (window.weatherEffects && !window.weatherEffects.isInitialized) {
+            await window.weatherEffects.init();
+        }
+        
+        // Cambiar a los efectos correspondientes
+        if (window.weatherEffects && window.weatherEffects.isInitialized) {
+            window.weatherEffects.changeWeather(weatherCondition);
+        }
+    } catch (error) {
+        console.warn('No se pudieron inicializar los efectos de clima:', error);
+    }
+}
+
+/**
+ * Función para probar los efectos de clima (temporal)
+ */
+window.testWeatherEffect = async function(weatherType) {
+    try {
+        console.log('🎯 Iniciando prueba de efecto:', weatherType);
+        
+        // Probar primero con efectos simplificados
+        if (window.simpleWeatherEffects) {
+            if (!window.simpleWeatherEffects.isInitialized) {
+                console.log('🔄 Inicializando Simple Weather Effects...');
+                await window.simpleWeatherEffects.init();
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+            
+            if (window.simpleWeatherEffects.isInitialized) {
+                console.log('🌤️ Aplicando efecto simple:', weatherType);
+                window.simpleWeatherEffects.changeWeather(weatherType);
+                
+                // Feedback visual
+                const button = event?.target;
+                if (button) {
+                    const originalText = button.textContent;
+                    button.textContent = '✅ ' + originalText.substring(2);
+                    button.style.background = '#10B981';
+                    setTimeout(() => {
+                        button.textContent = originalText;
+                        button.style.background = '';
+                    }, 1500);
+                }
+                return;
+            }
+        }
+        
+        // Fallback a efectos originales
+        console.log('📋 Verificando elementos DOM...');
+        const card = document.getElementById('current-weather');
+        console.log('Card encontrado:', !!card);
+        
+        if (!window.weatherEffects) {
+            console.warn('⚠️ WeatherEffects no está disponible');
+            return;
+        }
+        
+        // Inicializar efectos originales si es necesario
+        if (!window.weatherEffects.isInitialized) {
+            console.log('🔄 Inicializando WeatherEffects...');
+            await window.weatherEffects.init();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+        
+        // Cambiar efectos
+        if (window.weatherEffects.isInitialized) {
+            console.log('🌤️ Cambiando a efecto:', weatherType);
+            window.weatherEffects.changeWeather(weatherType);
+        }
+        
+    } catch (error) {
+        console.error('💥 Error al probar efectos:', error);
+        
+        // Mostrar error al usuario
+        const button = event?.target;
+        if (button) {
+            const originalText = button.textContent;
+            button.textContent = '❌ Error';
+            button.style.background = '#EF4444';
+            setTimeout(() => {
+                button.textContent = originalText;
+                button.style.background = '';
+            }, 2000);
+        }
+    }
+};
+
+/**
+ * Inicializar efectos manualmente (para debug)
+ */
+window.initWeatherEffectsManually = async function() {
+    try {
+        console.log('🔧 Inicializando efectos manualmente...');
+        
+        // Probar efectos simplificados primero
+        if (window.simpleWeatherEffects) {
+            await window.simpleWeatherEffects.init();
+            console.log('✅ Efectos simplificados inicializados');
+        }
+        
+        // También inicializar efectos complejos
+        if (window.weatherEffects) {
+            await window.weatherEffects.init();
+            console.log('✅ Efectos complejos inicializados');
+        }
+        
+    } catch (error) {
+        console.error('💥 Error inicializando efectos:', error);
+    }
+};
+
+/**
+ * Mostrar información de debug
+ */
+window.showDebugInfo = function() {
+    const info = {
+        simpleEffects: {
+            available: !!window.simpleWeatherEffects,
+            initialized: window.simpleWeatherEffects?.isInitialized || false,
+            currentWeather: window.simpleWeatherEffects?.currentWeather?.type || 'none'
+        },
+        weatherEffects: {
+            available: !!window.weatherEffects,
+            initialized: window.weatherEffects?.isInitialized || false,
+            currentWeather: window.weatherEffects?.currentWeather?.type || 'none'
+        },
+        dependencies: {
+            jQuery: typeof $ !== 'undefined',
+            Snap: typeof Snap !== 'undefined',
+            GSAP: typeof gsap !== 'undefined'
+        },
+        elements: {
+            card: !!document.getElementById('current-weather'),
+            outerSVG: !!document.getElementById('weather-effects-outer'),
+            innerSVG: !!document.getElementById('weather-effects-inner'),
+            canvas: !!document.getElementById('weather-canvas')
+        }
+    };
+    
+    console.table(info);
+    console.log('📊 Información de debug completa:', info);
+    alert('Info de debug mostrada en la consola (F12)');
+};
+
+// ========================================================================
+// MODO OSCURO
+// ========================================================================
+
+/**
+ * Estado del modo oscuro
+ */
+let isDarkMode = false;
+
+/**
+ * Alternar modo oscuro
+ */
+window.toggleDarkMode = function() {
+    try {
+        isDarkMode = !isDarkMode;
+        const body = document.body;
+        const button = document.getElementById('dark-mode-btn');
+        
+        if (isDarkMode) {
+            // Activar modo oscuro
+            body.classList.add('dark-mode');
+            button.textContent = '☀️ Modo Claro';
+            button.className = 'px-3 py-2 text-xs bg-yellow-600 text-white rounded-md hover:bg-yellow-700 transition-colors ml-2';
+            
+            // Actualizar efectos de clima para modo oscuro
+            updateWeatherEffectsForDarkMode(true);
+            
+            console.log('🌙 Modo oscuro activado');
+        } else {
+            // Desactivar modo oscuro
+            body.classList.remove('dark-mode');
+            button.textContent = '🌙 Modo Oscuro';
+            button.className = 'px-3 py-2 text-xs bg-gray-800 text-white rounded-md hover:bg-gray-900 transition-colors ml-2';
+            
+            // Restaurar efectos de clima para modo claro
+            updateWeatherEffectsForDarkMode(false);
+            
+            console.log('☀️ Modo claro activado');
+        }
+        
+        // Guardar preferencia en localStorage
+        localStorage.setItem('darkMode', isDarkMode.toString());
+        
+    } catch (error) {
+        console.error('❌ Error al alternar modo oscuro:', error);
+    }
+};
+
+/**
+ * Actualizar colores de efectos de clima para modo oscuro
+ */
+function updateWeatherEffectsForDarkMode(darkMode) {
+    if (!window.simpleWeatherEffects || !window.simpleWeatherEffects.currentWeather) return;
+    
+    // Re-aplicar el efecto actual para usar los colores correctos
+    const currentWeatherType = window.simpleWeatherEffects.currentWeather.type;
+    if (currentWeatherType) {
+        // Esperar un poco para que las transiciones CSS se apliquen
+        setTimeout(() => {
+            window.simpleWeatherEffects.applyBackground();
+        }, 100);
+    }
+}
+
+/**
+ * Inicializar modo oscuro basado en horario solar
+ */
+function initializeDarkMode() {
+    try {
+        // Verificar si hay datos de clima disponibles para obtener sunrise/sunset
+        const lastWeatherData = JSON.parse(localStorage.getItem('weatherData') || 'null');
+        
+        if (lastWeatherData && lastWeatherData.sys && lastWeatherData.sys.sunrise && lastWeatherData.sys.sunset) {
+            const now = Date.now() / 1000; // Timestamp actual en segundos
+            const sunrise = lastWeatherData.sys.sunrise;
+            const sunset = lastWeatherData.sys.sunset;
+            
+            // Activar modo oscuro si es de noche (después del ocaso o antes del amanecer)
+            const shouldBeDark = now < sunrise || now > sunset;
+            
+            if (shouldBeDark && !isDarkMode) {
+                toggleDarkMode();
+                console.log('🌙 Modo oscuro activado automáticamente (es de noche)');
+            } else if (!shouldBeDark && isDarkMode) {
+                toggleDarkMode();
+                console.log('☀️ Modo claro activado automáticamente (es de día)');
+            }
+        } else {
+            // Fallback: usar preferencia guardada si no hay datos de clima
+            const savedDarkMode = localStorage.getItem('darkMode');
+            if (savedDarkMode === 'true' && !isDarkMode) {
+                toggleDarkMode();
+            }
+        }
+        
+        console.log('🎨 Modo oscuro inicializado:', isDarkMode ? 'Activado' : 'Desactivado');
+    } catch (error) {
+        console.warn('⚠️ No se pudo cargar configuración de modo oscuro:', error);
+    }
+}
+
+/**
+ * Actualizar modo oscuro basado en horario solar cuando se obtienen nuevos datos
+ */
+function updateDarkModeBasedOnSunTimes(weatherData) {
+    try {
+        if (!weatherData || !weatherData.sys) return;
+        
+        const now = Date.now() / 1000;
+        const sunrise = weatherData.sys.sunrise;
+        const sunset = weatherData.sys.sunset;
+        
+        const shouldBeDark = now < sunrise || now > sunset;
+        
+        if (shouldBeDark && !isDarkMode) {
+            toggleDarkMode();
+            console.log('🌙 Cambiando a modo oscuro (ocaso)');
+        } else if (!shouldBeDark && isDarkMode) {
+            toggleDarkMode();
+            console.log('☀️ Cambiando a modo claro (amanecer)');
+        }
+    } catch (error) {
+        console.warn('⚠️ Error al actualizar modo oscuro automático:', error);
+    }
+}
+
+// Inicializar modo oscuro cuando se carga la página
+document.addEventListener('DOMContentLoaded', initializeDarkMode);
 
 // Testing con datos de prueba (comentado para usar API real):
 // document.addEventListener('DOMContentLoaded', loadMockData);

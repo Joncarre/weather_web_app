@@ -344,10 +344,10 @@ body {
 /* Temperatura Principal - Hero */
 .temperature-main {
     font-size: clamp(4rem, 12vw, 6rem);
-    font-weight: 200;
+    font-weight: 300;
     line-height: 0.9;
     letter-spacing: -0.02em;
-    text-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
     color: var(--color-text-primary);
     background: linear-gradient(135deg, var(--color-text-primary) 0%, var(--color-text-secondary) 100%);
     -webkit-background-clip: text;
@@ -358,8 +358,8 @@ body {
 /* Temperaturas Secundarias */
 .temperature-small {
     font-size: 1.125rem;
-    font-weight: 500;
-    color: var(--color-text-secondary);
+    font-weight: 600;
+    color: var(--color-text-primary);
 }
 
 .temperature-forecast {
@@ -613,6 +613,20 @@ button:focus,
     );
 }
 
+.weather-main-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, 
+        transparent 0%, 
+        rgba(255, 255, 255, 0.5) 50%, 
+        transparent 100%
+    );
+}
+
 /* Grid de Información Adicional */
 .weather-info-grid {
     display: grid;
@@ -701,4 +715,305 @@ button:focus,
     padding: var(--spacing-lg);
     color: var(--color-text-tertiary);
     font-size: 0.875rem;
+}
+
+/* =========================================================================
+   EFECTOS DE CLIMA DINÁMICOS
+   ========================================================================= */
+
+/* Contenedor base para efectos de clima */
+.weather-main-card {
+    position: relative;
+    overflow: hidden;
+}
+
+/* Transiciones para diferentes tipos de clima */
+.weather-effects-container {
+    transition: background-color 2s ease;
+}
+
+/* Efectos de Lluvia */
+.weather-effects-container.rain {
+    background-color: #D8D8D8;
+}
+
+.weather-effects-container.rain .cloud {
+    transition: fill 2s ease;
+}
+
+.weather-effects-container.rain #cloud1 {
+    fill: #efefef;
+}
+
+.weather-effects-container.rain #cloud2 {
+    fill: #E6E6E6;
+}
+
+.weather-effects-container.rain #cloud3 {
+    fill: #D5D5D5;
+}
+
+/* Efectos de Tormenta */
+.weather-effects-container.thunder {
+    background-color: #9FA4AD;
+}
+
+.weather-effects-container.thunder .cloud {
+    transition: fill 2s ease;
+}
+
+.weather-effects-container.thunder #cloud1 {
+    fill: #9FA4AD;
+}
+
+.weather-effects-container.thunder #cloud2 {
+    fill: #8B8E98;
+}
+
+.weather-effects-container.thunder #cloud3 {
+    fill: #7B7988;
+}
+
+/* Efectos de Nieve */
+.weather-effects-container.snow {
+    background-color: #DAE3FD;
+}
+
+/* Efectos de Viento */
+.weather-effects-container.wind {
+    background-color: #E8F5E8;
+}
+
+/* SVG para efectos de clima */
+#weather-effects-outer,
+#weather-effects-inner {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 5;
+}
+
+#weather-effects-outer {
+    position: fixed;
+    z-index: 10;
+}
+
+/* Animaciones base para efectos */
+@keyframes lightning-flash {
+    0%, 100% { opacity: 0; }
+    10%, 20% { opacity: 1; }
+}
+
+.lightning-effect {
+    animation: lightning-flash 0.75s ease-out;
+}
+
+/* =========================================================================
+   EFECTOS SIMPLIFICADOS DE CLIMA - COLORES SUAVES
+   ========================================================================= */
+
+.rain-bg {
+    background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%) !important;
+    transition: background 1s ease;
+}
+
+.thunder-bg {
+    background: linear-gradient(135deg, #F5F5F5 0%, #E0E0E0 100%) !important;
+    transition: background 1s ease;
+}
+
+.snow-bg {
+    background: linear-gradient(135deg, #F3E5F5 0%, #E8EAF6 100%) !important;
+    transition: background 1s ease;
+}
+
+.wind-bg {
+    background: linear-gradient(135deg, #F1F8E9 0%, #E8F5E8 100%) !important;
+    transition: background 1s ease;
+}
+
+.clear-bg {
+    /* Sin fondo especial - usar el color natural de la tarjeta */
+    background: inherit !important;
+    transition: background 1s ease;
+}
+
+#weather-canvas {
+    border-radius: inherit;
+}
+
+/* =========================================================================
+   MODO OSCURO
+   ========================================================================= */
+
+/* Clase principal para modo oscuro */
+.dark-mode {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f172a 100%) !important;
+    color: #e2e8f0 !important;
+}
+
+/* Body en modo oscuro */
+body.dark-mode {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%) !important;
+}
+
+/* Tarjetas en modo oscuro */
+.dark-mode .glass-card-primary {
+    background: rgba(30, 41, 59, 0.8) !important;
+    border: 1px solid rgba(148, 163, 184, 0.3) !important;
+    backdrop-filter: blur(20px) !important;
+    color: #f1f5f9 !important;
+}
+
+.dark-mode .glass-card-primary * {
+    color: #f1f5f9 !important;
+}
+
+.dark-mode .glass-card-primary .data-value,
+.dark-mode .glass-card-primary [class*="value"] {
+    color: #ffffff !important;
+    font-weight: 500 !important;
+}
+
+/* Tarjeta de clima principal en modo oscuro */
+.dark-mode .weather-main-card {
+    background: rgba(15, 23, 42, 0.9) !important;
+    border: 1px solid rgba(100, 116, 139, 0.4) !important;
+    color: #f1f5f9 !important;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
+}
+
+.dark-mode .weather-main-card * {
+    color: #f1f5f9 !important;
+}
+
+.dark-mode .weather-main-card .data-value,
+.dark-mode .weather-main-card .temperature-main {
+    color: #ffffff !important;
+    font-weight: 500 !important;
+}
+
+/* Texto en modo oscuro */
+.dark-mode .title-main {
+    color: #f1f5f9 !important;
+}
+
+.dark-mode .location-text {
+    color: #f1f5f9 !important;
+}
+
+.dark-mode .weather-description {
+    color: #f1f5f9 !important;
+}
+
+.dark-mode .title-section {
+    color: #f1f5f9 !important;
+}
+
+.dark-mode .data-label {
+    color: #f1f5f9 !important;
+}
+
+.dark-mode .data-value {
+    color: #ffffff !important;
+    font-weight: 500 !important;
+}
+
+/* Temperatura principal en modo oscuro */
+.dark-mode .temperature-main {
+    color: #ffffff !important;
+    background: none !important;
+    -webkit-background-clip: unset !important;
+    -webkit-text-fill-color: #ffffff !important;
+    background-clip: unset !important;
+}
+
+/* Temperaturas secundarias en modo oscuro */
+.dark-mode .temperature-small {
+    color: #ffffff !important;
+    font-weight: 600 !important;
+}
+
+.dark-mode .temperature-forecast {
+    color: #ffffff !important;
+    font-weight: 700 !important;
+}
+
+/* Textos generales más claros en modo oscuro */
+.dark-mode p,
+.dark-mode span,
+.dark-mode div {
+    color: #f1f5f9 !important;
+}
+
+/* Valores específicos de datos del clima en blanco */
+.dark-mode .humidity-value,
+.dark-mode .wind-value,
+.dark-mode .uv-value,
+.dark-mode .precipitation-value,
+.dark-mode [class*="value"] {
+    color: #ffffff !important;
+    font-weight: 500 !important;
+}
+
+/* Efectos de clima en modo oscuro - versiones más oscuras */
+.dark-mode .rain-bg {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%) !important;
+}
+
+.dark-mode .thunder-bg {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;
+}
+
+.dark-mode .snow-bg {
+    background: linear-gradient(135deg, #312e81 0%, #3730a3 100%) !important;
+}
+
+.dark-mode .wind-bg {
+    background: linear-gradient(135deg, #064e3b 0%, #065f46 100%) !important;
+}
+
+.dark-mode .clear-bg {
+    /* Sin fondo especial - usar el color natural de la tarjeta en modo oscuro */
+    background: inherit !important;
+}
+
+/* Botones en modo oscuro */
+.dark-mode button {
+    border: 1px solid rgba(148, 163, 184, 0.2) !important;
+}
+
+/* Iconos en modo oscuro */
+.dark-mode .error-icon {
+    color: #ef4444 !important;
+}
+
+/* Loading screen en modo oscuro */
+.dark-mode #loading-screen {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%) !important;
+}
+
+/* Transiciones suaves para modo oscuro */
+* {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease !important;
+}
+
+/* Ocultar nubes SVG que causan problemas visuales */
+#cloud1, #cloud2, #cloud3,
+.cloud,
+g.cloud,
+#layer1, #layer2, #layer3 {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+}
+
+/* Ocultar SVGs de efectos originales */
+#weather-effects-outer,
+#weather-effects-inner {
+    display: none !important;
+    visibility: hidden !important;
 }
