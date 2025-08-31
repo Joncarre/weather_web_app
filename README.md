@@ -14,6 +14,24 @@ En resumen: una aplicación web del tiempo que es responsive y minimalista, opti
 - **Accesible** - Optimizado para personas mayores
 - **Sin anuncios** - Experiencia limpia y sin distracciones
 
+En la siguiente imagen se puede ver la temperatura actual, localización y hora.
+
+<p align="center">
+    <img src="images/im1.png" alt="Temperatura actual, localización y hora" style="width:30%; border-radius:16px;">
+</p>
+
+Ahora vemos la información que muestra. ¿Para qué más? Con esto ya tenemos toda la información que necesitamos para salir a la calle.
+
+<p align="center">
+    <img src="images/im2.png" alt="Temperatura actual, localización y hora" style="width:30%; border-radius:16px;">
+</p>
+
+Y por último, también podemos ver la predicción de los próximos 7 días, y una gráfica lineal (esto falta por terminar) donde se verán cuatro parámetros: temperatura máxima, mínima, velocidad de viento y probabilidad de lluvia.
+
+<p align="center">
+    <img src="images/im3.png" alt="Temperatura actual, localización y hora" style="width:30%; border-radius:16px;">
+</p>
+
 ## Funcionalidades
 
 ### Clima actual
