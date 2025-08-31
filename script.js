@@ -678,17 +678,130 @@ function cleanupCache() {
 /**
  * Actualiza la información de ubicación con mejor estilo
  */
+/**
+ * Obtiene la hora actual formateada
+ */
+function getCurrentTimeString() {
+    const now = new Date();
+    return now.toLocaleTimeString('es-ES', { 
+        hour: '2-digit', 
+        minute: '2-digit',
+        hour12: false 
+    });
+}
+
 function updateLocation(data) {
     const locationText = `${data.name}, ${data.sys.country}`;
+    const currentTime = getCurrentTimeString();
+    
     elements.location.innerHTML = `
         <i data-lucide="map-pin" class="w-4 h-4"></i>
         <span>${locationText}</span>
+        <span class="text-gray-500 ml-2"> ${currentTime}</span>
     `;
     
     // Recrear iconos de Lucide después de actualizar el DOM
     if (typeof lucide !== 'undefined') {
         lucide.createIcons();
     }
+    
+    // Actualizar la hora cada minuto
+    setInterval(() => {
+        const currentTime = getCurrentTimeString();
+        const timeSpan = elements.location.querySelector('span:last-child');
+        if (timeSpan) {
+            timeSpan.textContent = `-  ${currentTime}`;
+        }
+    }, 60000); // Actualizar cada minuto
+}
+
+/**
+ * Determina si es de noche basado en la hora actual y los horarios de amanecer/ocaso
+ */
+function isNightTime() {
+    const now = new Date();
+    const currentHour = now.getHours();
+    
+    // Debug: mostrar hora actual para depuración
+    console.log(`🕒 Hora actual: ${currentHour}:${now.getMinutes().toString().padStart(2, '0')}`);
+    
+    // Si tenemos datos de amanecer y ocaso, usarlos
+    if (appState.sunriseTime && appState.sunsetTime) {
+        // Los timestamps vienen en segundos Unix, convertir a milisegundos
+        const sunrise = new Date(appState.sunriseTime * 1000);
+        const sunset = new Date(appState.sunsetTime * 1000);
+        const sunriseHour = sunrise.getHours();
+        const sunsetHour = sunset.getHours();
+        
+        console.log(`🌅 Amanecer: ${sunriseHour}:${sunrise.getMinutes().toString().padStart(2, '0')}`);
+        console.log(`🌇 Atardecer: ${sunsetHour}:${sunset.getMinutes().toString().padStart(2, '0')}`);
+        
+        const isNight = currentHour < sunriseHour || currentHour >= sunsetHour;
+        console.log(`🌙 Es de noche: ${isNight}`);
+        
+        return isNight;
+    }
+    
+    // Fallback: considerar noche entre 20:00 y 6:00
+    const isNight = currentHour >= 20 || currentHour < 6;
+    console.log(`🌙 Es de noche (fallback): ${isNight}`);
+    return isNight;
+}
+
+/**
+ * Obtiene el icono apropiado considerando si es de noche
+ */
+function getWeatherIcon(description, isNight = false) {
+    const dayIconMap = {
+        'clear sky': '☀️',
+        'few clouds': '🌤️',
+        'scattered clouds': '⛅',
+        'broken clouds': '☁️',
+        'shower rain': '🌦️',
+        'rain': '🌧️',
+        'thunderstorm': '⛈️',
+        'snow': '🌨️',
+        'mist': '🌫️',
+        'cielo claro': '☀️',
+        'algo nuboso': '⛅',
+        'nubes dispersas': '☁️',
+        'nubes': '☁️',
+        'muy nuboso': '☁️',
+        'lluvia ligera': '🌦️',
+        'lluvia': '🌧️',
+        'lluvia intensa': '🌧️',
+        'tormenta': '⛈️',
+        'nieve': '🌨️',
+        'niebla': '🌫️',
+        'default': '🌤️'
+    };
+    
+    const nightIconMap = {
+        'clear sky': '🌙',
+        'few clouds': '🌙',
+        'scattered clouds': '☁️',
+        'broken clouds': '☁️',
+        'shower rain': '🌦️',
+        'rain': '🌧️',
+        'thunderstorm': '⛈️',
+        'snow': '🌨️',
+        'mist': '🌫️',
+        'cielo claro': '🌙',
+        'algo nuboso': '🌙',
+        'nubes dispersas': '☁️',
+        'nubes': '☁️',
+        'muy nuboso': '☁️',
+        'lluvia ligera': '🌦️',
+        'lluvia': '🌧️',
+        'lluvia intensa': '🌧️',
+        'tormenta': '⛈️',
+        'nieve': '🌨️',
+        'niebla': '🌫️',
+        'default': '🌙'
+    };
+    
+    const iconMap = isNight ? nightIconMap : dayIconMap;
+    return iconMap[description] || iconMap['default'];
 }
 
 /**
@@ -701,20 +814,9 @@ function renderCurrentWeather(data) {
     // Actualizar tema basado en los nuevos datos de sol
     updateThemeBasedOnTime();
     
-    const iconMap = {
-        'clear sky': '☀️',
-        'few clouds': '🌤️',
-        'scattered clouds': '⛅',
-        'broken clouds': '☁️',
-        'shower rain': '🌦️',
-        'rain': '🌧️',
-        'thunderstorm': '⛈️',
-        'snow': '🌨️',
-        'mist': '🌫️',
-        'default': '🌤️'
-    };
-
-    const weatherIcon = iconMap[data.weather[0].description] || iconMap['default'];
+    // Determinar si es de noche
+    const isNight = isNightTime();
+    const weatherIcon = getWeatherIcon(data.weather[0].description, isNight);
     
     elements.currentWeather.innerHTML = `
         <div class="text-center">
@@ -739,6 +841,16 @@ function renderCurrentWeather(data) {
  * Renderiza información adicional con el nuevo diseño
  */
 function renderAdditionalInfo(data) {
+    // Determinar si es de noche para UV index e iconos
+    const isNight = isNightTime();
+    let uvIndex = data.uvi || 0;
+    let uvIcon = '☀️';
+    
+    if (isNight) {
+        uvIndex = 0;
+        uvIcon = '🌙';
+    }
+    
     const additionalData = [
         {
             icon: '💧',
@@ -753,10 +865,10 @@ function renderAdditionalInfo(data) {
             lucideIcon: 'wind'
         },
         {
-            icon: '☀️',
+            icon: uvIcon,
             label: 'Índice UV',
-            value: data.uvi ? Math.round(data.uvi) : 'N/A',
-            lucideIcon: 'sun'
+            value: uvIndex,
+            lucideIcon: isNight ? 'moon' : 'sun'
         },
         {
             icon: '🌧️',
@@ -789,26 +901,13 @@ function renderForecast(data) {
         return;
     }
     
-    // Mapeo de iconos
-    const iconMap = {
-        'cielo claro': '☀️',
-        'algo nuboso': '⛅',
-        'nubes dispersas': '☁️',
-        'nubes': '☁️',
-        'muy nuboso': '☁️',
-        'lluvia ligera': '🌦️',
-        'lluvia': '🌧️',
-        'lluvia intensa': '🌧️',
-        'tormenta': '⛈️',
-        'nieve': '🌨️',
-        'niebla': '🌫️',
-        'default': '☀️'
-    };
-    
     // Procesar datos por días - agrupar para obtener máximas y mínimas reales
     const dailyData = [];
     const dailyMap = new Map();
     
+    // Usar la hora actual para determinar si mostrar iconos de noche en todo el pronóstico
+    const isCurrentlyNight = isNightTime();
+
     data.list.forEach(item => {
         const date = new Date(item.dt * 1000);
         const dateKey = date.toDateString();
@@ -819,7 +918,7 @@ function renderForecast(data) {
                 temps: [],
                 precipitation: [],
                 weather: item.weather[0],
-                icon: iconMap[item.weather[0].description] || iconMap['default']
+                icon: getWeatherIcon(item.weather[0].description, isCurrentlyNight)
             });
         }
         
@@ -827,15 +926,13 @@ function renderForecast(data) {
         dayData.temps.push(item.main.temp);
         dayData.precipitation.push(item.pop * 100);
         
-        // Usar el icono del mediodía si está disponible (12:00)
+        // Usar el icono del mediodía si está disponible (12:00), pero respetando el modo noche actual
         const hour = date.getHours();
         if (hour >= 11 && hour <= 13) {
             dayData.weather = item.weather[0];
-            dayData.icon = iconMap[item.weather[0].description] || iconMap['default'];
+            dayData.icon = getWeatherIcon(item.weather[0].description, isCurrentlyNight);
         }
-    });
-    
-    // Convertir a array y calcular estadísticas reales
+    });    // Convertir a array y calcular estadísticas reales
     const processedDaily = Array.from(dailyMap.values()).slice(0, 7).map(day => ({
         date: day.date,
         tempMax: Math.round(Math.max(...day.temps)),
@@ -860,7 +957,7 @@ function renderForecast(data) {
             tempMax: Math.round(lastDay.tempMax + tempVariation),
             tempMin: Math.round(lastDay.tempMin + tempVariation),
             weather: lastDay.weather,
-            icon: lastDay.icon,
+            icon: getWeatherIcon(lastDay.weather.description, isCurrentlyNight), // Usar el modo noche actual
             precipitation: Math.max(0, Math.round(lastDay.precipitation + (Math.random() * 20 - 10))) // Variación de ±10%
         };
         

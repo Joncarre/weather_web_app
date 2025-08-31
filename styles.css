@@ -767,6 +767,12 @@ button:focus,
     }
 }
 
+/* Contenedor del pronóstico con scroll horizontal */
+.forecast-scroll {
+    padding-left: 8px;
+    padding-right: 8px;
+}
+
 /* Tarjetas del Pronóstico */
 .forecast-card, .forecast-day-card {
     background: var(--bg-glass-secondary);

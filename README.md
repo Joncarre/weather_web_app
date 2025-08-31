@@ -18,11 +18,8 @@ En resumen: una aplicación web del tiempo que es responsive y minimalista, opti
 
 ### Clima actual
 - Temperatura actual y sensación térmica
-- Descripción detallada del clima
 - Humedad y velocidad del viento
-- Presión atmosférica
 - Índice UV
-- Visibilidad
 - Hora de salida y puesta del sol
 
 ### Pronóstico extendido
