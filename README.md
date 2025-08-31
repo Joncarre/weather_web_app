@@ -14,22 +14,22 @@ En resumen: una aplicación web del tiempo que es responsive y minimalista, opti
 - **Accesible** - Optimizado para personas mayores
 - **Sin anuncios** - Experiencia limpia y sin distracciones
 
-En la siguiente imagen se puede ver la temperatura actual, localización y hora.
+En la siguiente imagen se puede ver la temperatura actual, localización y hora. Los iconos y el tema de la interfaz cambia según el momento del día. También hay animaciones para según qué tipo de clima: lluvia, tormenta, viento superior a 30 kms/h y nieve.
 
 <div align="center">
-    <img src="assets/images/im1.jpg" alt="Temperatura actual, localización y hora" style="width:45%; border-radius:16px;">
+    <img src="assets/images/im1.jpg" alt="Temperatura actual, localización y hora" style="width:40%; border-radius:16px;">
 </div>
 
 Ahora vemos la información que muestra. ¿Para qué más? Con esto ya tenemos toda la información que necesitamos para salir a la calle.
 
 <div align="center">
-    <img src="assets/images/im2.jpg" alt="Información adicional del clima" style="width:45%; border-radius:16px;">
+    <img src="assets/images/im2.jpg" alt="Información adicional del clima" style="width:40%; border-radius:16px;">
 </div>
 
-Y por último, también podemos ver la predicción de los próximos 7 días, y una gráfica lineal (esto falta por terminar) donde se verán cuatro parámetros: temperatura máxima, mínima, velocidad de viento y probabilidad de lluvia.
+Y por último, también podemos ver la predicción de los próximos 7 días haciendo scroll, y una gráfica lineal (esto falta por terminar) donde se verán cuatro parámetros: temperatura máxima, mínima, velocidad de viento y probabilidad de lluvia.
 
 <div align="center">
-    <img src="assets/images/im3.jpg" alt="Pronóstico de 7 días" style="width:45%; border-radius:16px;">
+    <img src="assets/images/im3.jpg" alt="Pronóstico de 7 días" style="width:40%; border-radius:16px;">
 </div>
 
 ## Funcionalidades
