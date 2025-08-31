@@ -17,19 +17,19 @@ En resumen: una aplicación web del tiempo que es responsive y minimalista, opti
 En la siguiente imagen se puede ver la temperatura actual, localización y hora.
 
 <div align="center">
-    <img src="assets/images/im1.png" alt="Temperatura actual, localización y hora" style="width:30%; border-radius:16px;">
+    <img src="assets/images/im1.jpg" alt="Temperatura actual, localización y hora" style="width:30%; border-radius:16px;">
 </div>
 
 Ahora vemos la información que muestra. ¿Para qué más? Con esto ya tenemos toda la información que necesitamos para salir a la calle.
 
 <div align="center">
-    <img src="assets/images/im2.png" alt="Información adicional del clima" style="width:30%; border-radius:16px;">
+    <img src="assets/images/im2.jpg" alt="Información adicional del clima" style="width:30%; border-radius:16px;">
 </div>
 
 Y por último, también podemos ver la predicción de los próximos 7 días, y una gráfica lineal (esto falta por terminar) donde se verán cuatro parámetros: temperatura máxima, mínima, velocidad de viento y probabilidad de lluvia.
 
 <div align="center">
-    <img src="assets/images/im3.png" alt="Pronóstico de 7 días" style="width:30%; border-radius:16px;">
+    <img src="assets/images/im3.jpg" alt="Pronóstico de 7 días" style="width:30%; border-radius:16px;">
 </div>
 
 ## Funcionalidades
