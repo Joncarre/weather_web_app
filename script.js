@@ -851,6 +851,23 @@ function renderAdditionalInfo(data) {
         uvIcon = '🌙';
     }
     
+    // Obtener horarios de amanecer y atardecer
+    let sunriseTime = 'N/A';
+    let sunsetTime = 'N/A';
+    
+    if (data.sys && data.sys.sunrise && data.sys.sunset) {
+        sunriseTime = new Date(data.sys.sunrise * 1000).toLocaleTimeString('es-ES', { 
+            hour: '2-digit', 
+            minute: '2-digit',
+            hour12: false 
+        });
+        sunsetTime = new Date(data.sys.sunset * 1000).toLocaleTimeString('es-ES', { 
+            hour: '2-digit', 
+            minute: '2-digit',
+            hour12: false 
+        });
+    }
+    
     const additionalData = [
         {
             icon: '💧',
@@ -875,6 +892,18 @@ function renderAdditionalInfo(data) {
             label: 'Precipitación',
             value: getPrecipitationChance(data),
             lucideIcon: 'cloud-rain'
+        },
+        {
+            icon: '🌅',
+            label: 'Amanecer',
+            value: sunriseTime,
+            lucideIcon: 'sunrise'
+        },
+        {
+            icon: '🌇',
+            label: 'Atardecer',
+            value: sunsetTime,
+            lucideIcon: 'sunset'
         }
     ];
 

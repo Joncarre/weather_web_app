@@ -424,43 +424,47 @@ body,
     transition: all 100ms ease;
 }
 
-/* Componentes de Información */
+/* Componentes de Información - solo bordes laterales */
 .info-card {
     background: var(--bg-glass-secondary);
     backdrop-filter: blur(12px);
-    border: var(--border-glass);
+    border: none;
+    border-left: 1px solid rgba(59, 130, 246, 0.3);
+    border-right: 1px solid rgba(59, 130, 246, 0.3);
     border-radius: var(--border-radius-lg);
-    padding: var(--spacing-lg);
+    padding: 12px;
     text-align: center;
     transition: var(--transition-fast);
-    box-shadow: var(--shadow-soft);
+    box-shadow: none;
 }
 
 .info-card:hover {
     background: var(--bg-glass-primary);
     transform: translateY(-2px);
-    box-shadow: var(--shadow-medium);
+    box-shadow: none;
+    border-left-color: rgba(59, 130, 246, 0.5);
+    border-right-color: rgba(59, 130, 246, 0.5);
 }
 
 /* Iconos de Información */
 .info-icon {
-    font-size: 1.75rem;
-    margin-bottom: var(--spacing-sm);
+    font-size: 1.25rem; /* Reducido de 1.75rem */
+    margin-bottom: 6px; /* Reducido de var(--spacing-sm) */
     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
 }
 
 .info-label {
     color: var(--color-text-secondary);
-    font-size: 0.875rem;
+    font-size: 0.75rem; /* Reducido de 0.875rem */
     font-weight: 500;
-    margin-bottom: var(--spacing-xs);
+    margin-bottom: 4px; /* Reducido de var(--spacing-xs) */
     text-transform: uppercase;
     letter-spacing: 0.05em;
 }
 
 .info-value {
     color: var(--color-text-primary);
-    font-size: 1.125rem;
+    font-size: 0.875rem; /* Reducido de 1.125rem */
     font-weight: 600;
 }
 
@@ -754,16 +758,41 @@ button:focus,
     );
 }
 
-/* Grid de Información Adicional */
+/* Grid de Información Adicional - 3 filas x 2 columnas */
+#additional-info.weather-main-card {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    width: 100%;
+    max-width: none;
+    padding: 15px 0 !important;
+    background: transparent !important;
+    backdrop-filter: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+}
+
+/* Eliminar todos los pseudo-elementos de additional-info */
+#additional-info.weather-main-card::before,
+#additional-info.weather-main-card::after {
+    display: none !important;
+}
+
 .weather-info-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: var(--spacing-md);
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: var(--spacing-sm);
+    max-width: none; /* Quitar limitación de ancho */
+    margin: 0;
+    position: relative;
+    z-index: 2;
 }
 
 @media (max-width: 640px) {
     .weather-info-grid {
         grid-template-columns: repeat(2, 1fr);
+        gap: var(--spacing-xs);
     }
 }
 
