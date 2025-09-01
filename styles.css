@@ -415,12 +415,10 @@ body,
 
 .glass-card-hover:hover {
     background: var(--bg-glass-hover);
-    transform: translateY(-4px) scale(1.02);
     box-shadow: var(--shadow-strong);
 }
 
 .glass-card-hover:active {
-    transform: translateY(-2px) scale(1.01);
     transition: all 100ms ease;
 }
 
@@ -440,7 +438,6 @@ body,
 
 .info-card:hover {
     background: var(--bg-glass-primary);
-    transform: translateY(-2px);
     box-shadow: none;
     border-left-color: rgba(59, 130, 246, 0.5);
     border-right-color: rgba(59, 130, 246, 0.5);
@@ -778,6 +775,12 @@ button:focus,
     display: none !important;
 }
 
+/* Espaciado específico para current-weather */
+#current-weather {
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+
 .weather-info-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -819,14 +822,14 @@ button:focus,
 
 .forecast-card:hover {
     background: var(--bg-glass-primary);
-    transform: translateY(-4px);
     box-shadow: var(--shadow-medium);
 }
 
 /* Sección de pronóstico */
 #forecast.weather-main-card {
     position: relative;
-    padding-bottom: calc(var(--spacing-2xl) / 2);
+    padding-top: 20px;
+    padding-bottom: 20px;
 }
 
 #forecast.weather-main-card::before {
@@ -887,7 +890,6 @@ button:focus,
 
 .chart-nav-button:hover {
     background: var(--bg-glass-secondary);
-    transform: translateY(-2px);
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
     color: var(--color-accent);
 }
@@ -912,7 +914,6 @@ button:focus,
 
 .chart-nav-button-main:hover {
     border-color: rgba(59, 130, 246, 0.8);
-    transform: translateY(-1px);
 }
 
 /* Iconos del Clima Mejorados */
@@ -941,18 +942,12 @@ button:focus,
 }
 
 .btn-primary:hover {
-    transform: translateY(-2px);
     box-shadow: var(--shadow-medium);
-}
-
-.btn-primary:active {
-    transform: translateY(0);
 }
 
 /* Header Mejorado */
 .app-header {
     text-align: center;
-    margin-bottom: var(--spacing-2xl);
     padding: var(--spacing-lg);
 }
 
@@ -1161,7 +1156,6 @@ body.dark-mode {
 
 .dark-mode .chart-nav-button-main:hover {
     border-color: rgba(59, 130, 246, 0.9);
-    transform: translateY(-1px);
 }
 
 /* Texto en modo oscuro */
