@@ -1058,18 +1058,29 @@ function renderForecast(data) {
  * Función para ir a la página de gráfica desde la página principal
  */
 function goToForecastChart() {
-    // Obtener los datos actuales del clima y pronóstico
-    const weatherData = localStorage.getItem('weatherData');
-    const forecastData = localStorage.getItem('forecastData');
+    // Obtener los datos actuales del clima y pronóstico desde appState
+    const weatherData = appState.weatherData;
+    const forecastData = appState.forecastData;
     
-    if (weatherData) {
-        // Guardar datos para la página de pronóstico
-        localStorage.setItem('chartData', forecastData || weatherData);
-        localStorage.setItem('forecastData', forecastData || weatherData);
-        
-        console.log('📊 Navegando a página de pronóstico con datos guardados');
-        // Navegar a la página de pronóstico extendido
-        window.location.href = 'forecast.html';
+    if (weatherData && forecastData) {
+        // Verificar que forecastData tiene la estructura correcta
+        if (forecastData.list && forecastData.city) {
+            // Guardar datos para la página de pronóstico
+            localStorage.setItem('chartData', JSON.stringify(forecastData));
+            localStorage.setItem('forecastData', JSON.stringify(forecastData));
+            
+            console.log('📊 Navegando a página de gráficas con datos guardados', {
+                listCount: forecastData.list.length,
+                city: forecastData.city.name
+            });
+            
+            // Navegar a la página de gráficas
+            window.location.href = 'chart.html';
+        } else {
+            console.error('❌ Formato de datos incorrecto:', forecastData);
+            alert('Los datos del pronóstico no están en el formato correcto. Recargando...');
+            location.reload();
+        }
     } else {
         // Si no hay datos, mostrar mensaje de error
         console.error('❌ No hay datos disponibles para mostrar el pronóstico');

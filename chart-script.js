@@ -71,7 +71,18 @@ async function getForecastData() {
         
         if (savedData) {
             console.log('📦 Usando datos guardados del pronóstico');
-            return JSON.parse(savedData);
+            const parsedData = JSON.parse(savedData);
+            
+            // Verificar que los datos tienen la estructura correcta
+            if (parsedData && parsedData.list && parsedData.city) {
+                console.log('✅ Datos válidos encontrados:', {
+                    listCount: parsedData.list.length,
+                    city: parsedData.city.name
+                });
+                return parsedData;
+            } else {
+                console.warn('⚠️ Datos en localStorage no tienen formato correcto:', parsedData);
+            }
         }
         
         // Si no hay datos guardados, obtener de la API
@@ -503,4 +514,4 @@ function updateDarkModeButton() {
 // ========================================================================
 
 // Inicializar cuando se carga la página
-document.addEventListener('DOMContentLoaded', initializeChartPage);
+// document.addEventListener('DOMContentLoaded', initializeChartPage); // Ahora se inicializa desde HTML

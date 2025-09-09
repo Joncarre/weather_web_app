@@ -11,7 +11,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     
     <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest/dist/umd.js"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     
     <!-- Chart.js para gráficas -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -120,8 +120,13 @@
     <script src="chart-script.js"></script>
     
     <script>
-        // Initialize Lucide icons
-        lucide.createIcons();
+        // Initialize page after DOM and Lucide are ready
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize Lucide icons first
+            lucide.createIcons();
+            // Then initialize the chart page
+            initializeChartPage();
+        });
     </script>
 </body>
 </html>
