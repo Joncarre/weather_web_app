@@ -26,7 +26,7 @@ Ahora vemos la información que muestra. ¿Para qué más? Con esto ya tenemos t
     <img src="assets/images/im2.jpg" alt="Información adicional del clima" style="width:40%; border-radius:16px;">
 </div>
 
-Y por último, también podemos ver la predicción de los próximos 7 días haciendo scroll, y una gráfica lineal (esto falta por terminar) donde se verán cuatro parámetros: temperatura máxima, mínima, velocidad de viento y probabilidad de lluvia.
+Y por último, también podemos ver la predicción de los próximos 7 días haciendo scroll, y una gráfica lineal donde se verán cuatro parámetros: temperatura máxima, mínima, velocidad de viento y probabilidad de lluvia.
 
 <div align="center">
     <img src="assets/images/im3.jpg" alt="Pronóstico de 7 días" style="width:40%; border-radius:16px;">
