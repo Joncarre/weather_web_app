@@ -254,31 +254,44 @@ function renderMainChart(dailyData) {
                 bodyColor: isDarkMode ? '#f1f5f9' : '#475569',
                 borderColor: isDarkMode ? 'rgba(100, 116, 139, 0.4)' : 'rgba(203, 213, 225, 0.4)',
                 borderWidth: 1,
-                cornerRadius: 12,
-                bodyFont: { size: 14 },
-                titleFont: { size: 16, weight: 'bold' }
+                cornerRadius: 16,
+                padding: 12,
+                displayColors: true,
+                bodyFont: { size: 14, family: 'Inter' },
+                titleFont: { size: 16, weight: 'bold', family: 'Inter' },
+                usePointStyle: true,
+                boxWidth: 8,
+                boxHeight: 8
             }
         },
         scales: {
             x: {
                 grid: {
-                    color: isDarkMode ? 'rgba(100, 116, 139, 0.2)' : 'rgba(203, 213, 225, 0.3)',
-                    lineWidth: 1
+                    display: true,
+                    color: isDarkMode ? 'rgba(100, 116, 139, 0.15)' : 'rgba(203, 213, 225, 0.25)',
+                    lineWidth: 0.5,
+                    drawBorder: false
                 },
                 ticks: {
-                    color: isDarkMode ? '#f1f5f9' : '#64748b',
-                    font: { size: 14, weight: '500' }
-                }
+                    color: isDarkMode ? '#cbd5e1' : '#64748b',
+                    font: { size: 13, weight: '500', family: 'Inter' },
+                    padding: 10
+                },
+                border: { display: false }
             },
             y: {
                 grid: {
-                    color: isDarkMode ? 'rgba(100, 116, 139, 0.2)' : 'rgba(203, 213, 225, 0.3)',
-                    lineWidth: 1
+                    display: true,
+                    color: isDarkMode ? 'rgba(100, 116, 139, 0.15)' : 'rgba(203, 213, 225, 0.25)',
+                    lineWidth: 0.5,
+                    drawBorder: false
                 },
                 ticks: {
-                    color: isDarkMode ? '#f1f5f9' : '#64748b',
-                    font: { size: 14, weight: '500' }
-                }
+                    color: isDarkMode ? '#cbd5e1' : '#64748b',
+                    font: { size: 13, weight: '500', family: 'Inter' },
+                    padding: 10
+                },
+                border: { display: false }
             }
         },
         interaction: {
@@ -288,12 +301,24 @@ function renderMainChart(dailyData) {
         },
         elements: {
             point: {
-                radius: 6,
-                hoverRadius: 8
+                radius: 5,
+                hoverRadius: 8,
+                borderWidth: 2,
+                hitRadius: 10
             },
             line: {
-                borderWidth: 4,
-                tension: 0.4
+                borderWidth: 2,
+                tension: 0.4,
+                borderCapStyle: 'round',
+                borderJoinStyle: 'round'
+            }
+        },
+        layout: {
+            padding: {
+                left: 10,
+                right: 10,
+                top: 20,
+                bottom: 10
             }
         }
     };
@@ -306,42 +331,46 @@ function renderMainChart(dailyData) {
                 {
                     label: 'Temperatura Máxima (°C)',
                     data: dailyData.map(day => day.tempMax),
-                    borderColor: '#ef4444',
-                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                    borderColor: '#fb923c',
+                    backgroundColor: 'rgba(251, 146, 60, 0.15)',
                     fill: false,
-                    pointBackgroundColor: '#ef4444',
+                    pointBackgroundColor: '#fb923c',
                     pointBorderColor: '#ffffff',
-                    pointBorderWidth: 3
+                    pointBorderWidth: 3,
+                    tension: 0.3
                 },
                 {
                     label: 'Temperatura Mínima (°C)',
                     data: dailyData.map(day => day.tempMin),
-                    borderColor: '#3b82f6',
-                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    borderColor: '#60a5fa',
+                    backgroundColor: 'rgba(96, 165, 250, 0.15)',
                     fill: false,
-                    pointBackgroundColor: '#3b82f6',
+                    pointBackgroundColor: '#60a5fa',
                     pointBorderColor: '#ffffff',
-                    pointBorderWidth: 3
+                    pointBorderWidth: 3,
+                    tension: 0.3
                 },
                 {
                     label: 'Probabilidad de lluvia (%)',
                     data: dailyData.map(day => day.precipitationAvg),
-                    borderColor: '#06b6d4',
-                    backgroundColor: 'rgba(6, 182, 212, 0.1)',
+                    borderColor: '#22d3ee',
+                    backgroundColor: 'rgba(34, 211, 238, 0.15)',
                     fill: false,
-                    pointBackgroundColor: '#06b6d4',
+                    pointBackgroundColor: '#22d3ee',
                     pointBorderColor: '#ffffff',
-                    pointBorderWidth: 3
+                    pointBorderWidth: 3,
+                    tension: 0.3
                 },
                 {
                     label: 'Velocidad del viento (km/h)',
                     data: dailyData.map(day => day.windAvg),
-                    borderColor: '#10b981',
-                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    borderColor: '#86efac',
+                    backgroundColor: 'rgba(134, 239, 172, 0.15)',
                     fill: false,
-                    pointBackgroundColor: '#10b981',
+                    pointBackgroundColor: '#86efac',
                     pointBorderColor: '#ffffff',
-                    pointBorderWidth: 3
+                    pointBorderWidth: 3,
+                    tension: 0.3
                 }
             ]
         },
@@ -463,7 +492,7 @@ function initializeDarkMode() {
             if (shouldBeDark) {
                 isDarkMode = true;
                 document.body.classList.add('dark-mode');
-                updateDarkModeButton();
+                // updateDarkModeButton(); // No hay botón que actualizar
             }
         }
         
@@ -474,40 +503,40 @@ function initializeDarkMode() {
 }
 
 /**
- * Toggle del modo oscuro
+ * Toggle del modo oscuro - DESHABILITADO (modo automático por amanecer/ocaso)
  */
-window.toggleDarkMode = function() {
-    isDarkMode = !isDarkMode;
-    
-    if (isDarkMode) {
-        document.body.classList.add('dark-mode');
-    } else {
-        document.body.classList.remove('dark-mode');
-    }
-    
-    updateDarkModeButton();
-    
-    // Actualizar gráfica si existe
-    if (mainChart && forecastData) {
-        mainChart.destroy();
-        renderMainChart(forecastData);
-    }
-    
-    localStorage.setItem('darkMode', isDarkMode.toString());
-};
+// window.toggleDarkMode = function() {
+//     isDarkMode = !isDarkMode;
+//     
+//     if (isDarkMode) {
+//         document.body.classList.add('dark-mode');
+//     } else {
+//         document.body.classList.remove('dark-mode');
+//     }
+//     
+//     updateDarkModeButton();
+//     
+//     // Actualizar gráfica si existe
+//     if (mainChart && forecastData) {
+//         mainChart.destroy();
+//         renderMainChart(forecastData);
+//     }
+//     
+//     localStorage.setItem('darkMode', isDarkMode.toString());
+// };
 
 /**
- * Actualiza el botón de modo oscuro
+ * Actualiza el botón de modo oscuro - DESHABILITADO (no hay botón)
  */
-function updateDarkModeButton() {
-    const button = document.getElementById('dark-mode-btn');
-    if (button) {
-        button.innerHTML = isDarkMode 
-            ? '<i data-lucide="sun" class="w-5 h-5"></i>'
-            : '<i data-lucide="moon" class="w-5 h-5"></i>';
-        lucide.createIcons();
-    }
-}
+// function updateDarkModeButton() {
+//     const button = document.getElementById('dark-mode-btn');
+//     if (button) {
+//         button.innerHTML = isDarkMode 
+//             ? '<i data-lucide="sun" class="w-5 h-5"></i>'
+//             : '<i data-lucide="moon" class="w-5 h-5"></i>';
+//         lucide.createIcons();
+//     }
+// }
 
 // ========================================================================
 // INICIALIZACIÓN

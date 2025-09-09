@@ -40,78 +40,44 @@
 
     <!-- Main Content -->
     <div id="main-content" class="hidden min-h-screen p-4">
-        <!-- Header with Back Button -->
-        <header class="max-w-6xl mx-auto mb-6">
-            <div class="flex items-center justify-between">
-                <button onclick="goBack()" class="glass-button flex items-center gap-2 px-4 py-2">
-                    <i data-lucide="arrow-left" class="w-5 h-5"></i>
-                    <span>Volver</span>
-                </button>
-                
-                <div class="text-center">
-                    <h1 class="title-main">Evolución del clima</h1>
-                    <p id="location-display" class="location-text">
-                        <i data-lucide="map-pin" class="w-4 h-4 inline mr-1"></i>
-                        <span>Detectando ubicación...</span>
-                    </p>
-                </div>
-                
-                <button onclick="toggleDarkMode()" id="dark-mode-btn" class="glass-button px-4 py-2">
-                    <i data-lucide="moon" class="w-5 h-5"></i>
-                </button>
-            </div>
-        </header>
-
         <!-- Main Chart Container -->
         <main class="max-w-6xl mx-auto">
             <!-- Chart Section -->
             <div id="main-chart-section" class="weather-main-card">
-                <h2 class="title-section mb-6 text-center">Evolución de 7 días</h2>
+                <h2 class="title-section mb-6 text-center">Evolución 7 días</h2>
                 
                 <!-- Large Chart Container -->
                 <div class="large-chart-container">
                     <canvas id="main-weather-chart" width="800" height="400"></canvas>
                 </div>
                 
-                <!-- Chart Legend -->
-                <div class="chart-legend-grid mt-6">
-                    <div class="legend-item-large">
-                        <div class="legend-color-large bg-red-500"></div>
-                        <div class="legend-text">
-                            <span class="legend-title">Temperatura Máxima</span>
-                            <span class="legend-description">Pico diario de temperatura</span>
-                        </div>
+                <!-- Chart Legend - Grid 2x2 -->
+                <div class="grid grid-cols-2 gap-x-4 gap-y-3 mt-6 max-w-sm mx-auto">
+                    <div class="flex items-center gap-2">
+                        <span class="text-lg">🌡️</span>
+                        <span class="text-xs legend-temp-max">Temp. máxima</span>
                     </div>
-                    <div class="legend-item-large">
-                        <div class="legend-color-large bg-blue-500"></div>
-                        <div class="legend-text">
-                            <span class="legend-title">Temperatura Mínima</span>
-                            <span class="legend-description">Temperatura más baja del día</span>
-                        </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-lg">❄️</span>
+                        <span class="text-xs legend-temp-min">Temp. mínima</span>
                     </div>
-                    <div class="legend-item-large">
-                        <div class="legend-color-large bg-cyan-500"></div>
-                        <div class="legend-text">
-                            <span class="legend-title">Probabilidad de lluvia</span>
-                            <span class="legend-description">Porcentaje de posibilidad</span>
-                        </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-lg">🌧️</span>
+                        <span class="text-xs legend-rain">Posibilidad lluvia</span>
                     </div>
-                    <div class="legend-item-large">
-                        <div class="legend-color-large bg-green-500"></div>
-                        <div class="legend-text">
-                            <span class="legend-title">Velocidad del viento</span>
-                            <span class="legend-description">Promedio diario en km/h</span>
-                        </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-lg">💨</span>
+                        <span class="text-xs legend-wind">Intensidad viento</span>
                     </div>
                 </div>
             </div>
-
-            <!-- Quick Stats Summary -->
-            <div id="quick-stats" class="weather-main-card mt-6">
-                <h2 class="title-section mb-6 text-center">Resumen de la semana</h2>
-                <div id="stats-container" class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                    <!-- Stats will be populated by JavaScript -->
-                </div>
+            
+            <!-- Back Button at Bottom -->
+            <div class="text-center mt-8">
+                <button onclick="goBack()" class="chart-nav-button-main flex items-center gap-2 mx-auto">
+                    <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                    <span>Volver</span>
+                </button>
             </div>
         </main>
     </div>
